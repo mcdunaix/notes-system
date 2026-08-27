@@ -57,6 +57,22 @@ backup mirror deleted. Residual: GitHub can cache old commits by SHA
 for a while; the bot token was never fully committed (prefix only), but
 rotating it via BotFather remains the belt-and-braces close.
 
+**Decisions pinned.** No repo-local decisions.md (standing). The series
+protocol is pinned where the verify-references change was: a "Series"
+subsection in docs/STORAGE_PROTOCOL.md, evidenced by
+scripts/test_series_clustering.py. R1 (history rewrite vs accept) is
+closed as rewrite, recorded in this entry.
+
+**Files produced/changed.** New: scripts/test_series_clustering.py (13
+vectors). Modified: scripts/transcript.py (series helpers, save_entry,
+cluster_rows + Series column in build_index, verify split check, CLI
+--series), README.md (full rewrite), docs/STORAGE_PROTOCOL.md (Series
+subsection, frontmatter example), CLAUDE.md (series convention +
+command), skills/content-catalog/SKILL.md (CLI reference + series
+rule), LICENSE (holder), SESSION_STATE.md. Plus the filter-repo
+rewrite, which touched every historical blob without changing the
+checked-out tree.
+
 **Gotchas.**
 - CI's test glob picks up test_series_clustering.py automatically.
 - cluster_rows sorts on (series anchor, id) with str() coercion; ids in
@@ -64,6 +80,20 @@ rotating it via BotFather remains the belt-and-braces close.
 - The README series example shows only the command, no pasted output
   (the override print fires only when the guess differs; do not invent
   sample output, rerun for real if output is wanted).
+- Force-pushing rewritten history is permission-gated; it went through
+  only after the user answered an explicit consent prompt. Expect the
+  same gate on any future history rewrite.
+
+**On the horizon.**
+- Immediate: rotate the Telegram bot token via BotFather /revoke (user
+  action, closes the cached-old-commits residual; only the token's ID
+  prefix was ever committed). First code action if extending verify:
+  bring labs/ under it (manual gate lives in lab-builder self-audit),
+  R-15 vector first.
+- Rolled forward: en dashes swept but not codified in D-12 or gated in
+  CI (em dash only); skill frontmatter inconsistent (only
+  content-catalog has version:/tags:); content-catalog/SKILL.md still
+  the longest file in skills/.
 
 ### 2026-08-26 (4th session): Peer review pass; verify covers references/, student on-ramp, PII scrub, CI
 
