@@ -50,14 +50,12 @@ root is the catalog root (`$CATALOG_ROOT`); every skill path is parameterized.
    documented at the worked example. Series pinned in STORAGE_PROTOCOL
    ("Series" subsection), CLAUDE.md, and content-catalog SKILL.md.
 
-**BLOCKED, next action.** `git push --force origin main` needs the
-user's explicit go-ahead (permission gate on rewriting remote history;
-correct call, it is irreversible for the remote). Until pushed, GitHub
-still serves the old history and R1 is only locally resolved. After a
-verified push, delete /tmp/notes-system-backup.git. GitHub may retain
-old commits in caches/forks; the bot token was never fully committed
-(prefix only), rotating it via BotFather is still the belt-and-braces
-close.
+**R1 CLOSED.** User approved in-session; force-pushed and verified:
+remote main at the rewritten head, GitHub commit list and LICENSE
+content confirmed clean via API, CI green on the new head, pre-rewrite
+backup mirror deleted. Residual: GitHub can cache old commits by SHA
+for a while; the bot token was never fully committed (prefix only), but
+rotating it via BotFather remains the belt-and-braces close.
 
 **Gotchas.**
 - CI's test glob picks up test_series_clustering.py automatically.
