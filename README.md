@@ -47,7 +47,7 @@ notes-system/
 
 ```bash
 # 1. Clone anywhere. The repo root IS the catalog root.
-git clone <this-repo> && cd notes-system
+git clone https://github.com/mcdunaix/notes-system.git && cd notes-system
 
 # 2. Set the catalog root for the skills (or export it once in your shell).
 export CATALOG_ROOT="$(pwd)"
