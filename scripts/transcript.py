@@ -54,6 +54,7 @@ from collections import Counter
 
 NOTES_DIR = Path(__file__).resolve().parent.parent
 TRANSCRIPTS_DIR = NOTES_DIR / "transcripts"
+REFERENCES_DIR = NOTES_DIR / "references"  # shares the NC numbering (storage protocol)
 INDEX_PATH = NOTES_DIR / "000-dashboard" / "Index.md"
 
 CATALOG_PREFIX = "NC"  # Notes Catalog
@@ -219,6 +220,10 @@ def issued_ids(entries: list[dict]) -> set[int]:
     serves as the durable record of issued IDs. An `id:` line lost to an
     external edit (this has happened) shrinks the live set but not the
     index set, the union keeps allocation monotone either way.
+
+    references/ shares the NC numbering convention (storage protocol). Its
+    ids join the set here so a transcript ingest can never reuse one, the
+    blind spot that caused a live NC-0034 collision (see next-id.py).
     """
     nums = set()
     for e in entries:
@@ -227,6 +232,13 @@ def issued_ids(entries: list[dict]) -> set[int]:
             m = re.match(rf"^{CATALOG_PREFIX}-(\d+)$", str(fm["id"]))
             if m:
                 nums.add(int(m.group(1)))
+    if REFERENCES_DIR.exists():
+        for p in REFERENCES_DIR.rglob("*.md"):
+            fm = read_frontmatter(p)
+            if fm and "id" in fm:
+                m = re.match(rf"^{CATALOG_PREFIX}-(\d+)$", str(fm["id"]))
+                if m:
+                    nums.add(int(m.group(1)))
     if INDEX_PATH.exists():
         for m in ID_PATTERN.finditer(INDEX_PATH.read_text(encoding="utf-8")):
             nums.add(int(m.group(1)))
