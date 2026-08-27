@@ -15,6 +15,79 @@ root is the catalog root (`$CATALOG_ROOT`); every skill path is parameterized.
 
 ## Resume here
 
+### 2026-08-26 (4th session): Peer review pass; verify covers references/, student on-ramp, PII scrub, CI
+
+**Session arc.**
+1. User set the goal: peer review the repo as a tool, polish to industry
+   standard for a broad audience (students), keep it built around Hermes.
+2. Pipeline hardening: requirements.txt, Python 3.10 guard, missing-dep
+   errors that read as install steps, repo-relative output paths.
+3. Closed verify's documented blind spot: it now scans references/ too
+   (frontmatter, cross-tree id collisions, D-12). R-15 honored:
+   scripts/test_verify_references.py written RED first, 8 vectors.
+   Reference-only exemption: `--` inside fenced code (CLI flags quoted
+   in analysis); em dashes fail everywhere.
+4. Ran the tool for real and caught the classifier misfiling the
+   canonical 3Blue1Brown neural-network lecture into science (neuron
+   scored 19 vs ai-ml 8). Added deep-learning vocabulary to ai-ml
+   keywords with a regression vector (test_ai_ml_category.py); the
+   video now files under ai-ml, confirmed by a live add in a venv.
+5. Skills audit (agent sweep, then two agents fixing disjoint trees):
+   scrubbed the unredacted Telegram bot username (14 sites) and two real
+   private individuals used as examples; reconciled content-catalog to
+   transcript.py (NC filenames, 10 categories, next-id.py allocation,
+   PDF dedup, --topics everywhere); fixed two live bugs in
+   catalog-add-from-video.py (duration fallback wrote a bare comma,
+   --source was ignored); parameterized lecture-vetting's NC-0021 gates;
+   marked private-vault ids and the unshipped technical-research-survey
+   skill with a self-contained retrieval fallback; labeled Telegram /
+   mlx-whisper / Obsidian paths optional with cross-platform
+   alternatives; deleted the orphan social-media-cataloging.md and the
+   stale duplicate lecture-walkthrough lab-guide-pattern.md.
+6. Student-facing README rebuild (prereqs, worked example pasted from a
+   real run, troubleshooting), vocabulary section + unlisted-D-# note in
+   STORAGE_PROTOCOL, CI on 3.10/3.13 (vectors, empty-db gate, installer,
+   em dash sweep). First CI run green.
+7. Found SESSION_STATE.md itself re-leaking the identifier values it
+   recorded as redacted; scrubbed the values, kept the record.
+
+**Decisions pinned.** No repo-local decisions.md; the one protocol
+change (verify scans references/, fenced-hyphen exemption) is pinned in
+docs/STORAGE_PROTOCOL.md "Entry kinds" and evidenced by
+scripts/test_verify_references.py.
+
+**Files produced/changed.** Commit c2236ee, 40 files. New:
+requirements.txt, .github/workflows/ci.yml, scripts/test_ai_ml_category.py,
+scripts/test_verify_references.py. Deleted: the two lecture-walkthrough
+reference files above. Modified: transcript.py (verify extension, guard,
+require(), ai-ml keywords, rel paths), install-skills.sh (missing-Hermes
+note), README, CLAUDE.md, both docs, SESSION_STATE, and 20 skill files.
+
+**Gotchas.**
+- Pushing .github/workflows/ needs the `workflow` OAuth scope; the push
+  was rejected until `gh auth refresh -h github.com -s workflow` (now
+  granted for mcdunaix).
+- Category keywords are word-boundary matched in singular form only
+  ("neuron" matches, "neurons" does not). "layer", "network",
+  "training", "pixel" were deliberately left out of ai-ml as too
+  generic; see the comment in CATEGORY_RULES.
+- The redacted identifier values (Telegram user ID, bot username) are
+  still in pushed git history (commit 62e7c28 era). Working tree is
+  clean; history is not.
+- README sample output is pasted from a real run; if add's output format
+  changes, re-run the real ingest and repaste, do not hand-edit.
+
+**On the horizon.**
+- Immediate: decide R1, the identifiers in pushed git history. Either
+  accept exposure (they are a bot username and a Telegram user id, low
+  but nonzero risk) or rewrite history: `git filter-repo` on the two
+  strings, force-push, and note the rewrite in README for cloners.
+- Rolled forward: labs/ is still outside verify (manual gate in
+  lab-builder self-audit); en dashes are swept but not codified in D-12
+  or gated in CI (em dash only); skill frontmatter is inconsistent
+  (only content-catalog has version:/tags:); content-catalog/SKILL.md
+  was deduplicated but is still the longest file in skills/.
+
 ### 2026-08-26 (3rd session): Database now ships folder-less; content folders removed from the public repo
 
 **Session arc.**
