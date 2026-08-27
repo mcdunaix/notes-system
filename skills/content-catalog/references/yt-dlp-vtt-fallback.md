@@ -65,19 +65,19 @@ transcript = '\n'.join(deduped)
 
 ## After cleaning: integrate with catalog
 
-Since `_scripts/transcript.py` has no `--text` flag to inject pre-fetched content,
+Since `scripts/transcript.py` has no `--text` flag to inject pre-fetched content,
 the workflow is:
 
 ```bash
 # 1. Run the script to create the catalog entry (will use YT API)
 cd $CATALOG_ROOT
-python3 _scripts/transcript.py add "https://www.youtube.com/watch?v=VIDEO_ID"
+python3 scripts/transcript.py add "https://www.youtube.com/watch?v=VIDEO_ID"
 
 # 2. If the API failed and the entry wasn't created, create manually:
 #    - Find the next NC ID from INDEX.md + 1
 #    - Write a markdown file to transcripts/<category>/<date>_<slug>.md
 #    - Include full YAML frontmatter (see SKILL.md for format)
-#    - Rebuild index: python3 _scripts/transcript.py rebuild
+#    - Rebuild index: python3 scripts/transcript.py rebuild
 
 # 3. If the entry WAS created but has empty/no text (in case API returned
 #    nothing but didn't error), overwrite the full-text section with VTT content

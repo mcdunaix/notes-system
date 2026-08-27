@@ -7,12 +7,11 @@ Hermes auto-processes them into the content catalog.
 
 1. **Bot creation**: Via @BotFather on Telegram, `/newbot` → name: `<YourBotName>`,
    username: `<your_bot_username>`
-2. **Token**: `<BOT_ID>:...` → set in `~/.hermes/.env` as `TELEGRAM_BOT_TOKEN`
+2. **Token**: `<BOT_ID>:<SECRET>` (from @BotFather) → set in `~/.hermes/.env` as `TELEGRAM_BOT_TOKEN`
 3. **Gateway**: Started via `hermes gateway run` (background process)
 4. **User approval**: First message from user generated a pairing code
    (`<PAIRING_CODE>`) → approved via `hermes pairing approve telegram <code>`
 5. **Allowed users**: Set `TELEGRAM_ALLOWED_USERS=<your_telegram_user_id>` in `.env`
-   (mcdunaix's Telegram user ID)
 6. **Channel prompt**: Configured in config.yaml via:
    ```
    hermes config set telegram.channel_prompts '{"<your_telegram_user_id>": "..."}'
@@ -24,7 +23,7 @@ The prompt instructs the gateway agent to:
 - Detect source type (YouTube, Instagram, etc.)
 - Fetch transcript/description
 - For Instagram: download + transcribe audio
-- Save to catalog using `$CATALOG_ROOT/_scripts/transcript.py`
+- Save to catalog using `$CATALOG_ROOT/scripts/transcript.py`
 - Reply with NC-XXXX ID
 
 ## Gateway lifecycle commands

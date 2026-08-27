@@ -66,12 +66,12 @@ Update the existing entry (created by the script's `add` command which saved
 the description only) with the full transcript:
 
 ```bash
-python3 _scripts/transcript.py add "https://www.instagram.com/reel/<shortcode>/"
+python3 scripts/transcript.py add "https://www.instagram.com/reel/<shortcode>/"
 ```
 
 If already in catalog (dedup), use `--force`:
 ```bash
-python3 _scripts/transcript.py add --force "https://www.instagram.com/reel/<shortcode>/"
+python3 scripts/transcript.py add --force "https://www.instagram.com/reel/<shortcode>/"
 ```
 
 The entry file is at `transcripts/<category>/<date>-<slug>.md`. Edit the

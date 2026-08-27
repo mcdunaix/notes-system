@@ -15,7 +15,7 @@ lecture with a clear pedagogical arc.
 
 ## Metadata enrichment
 
-After `_scripts/transcript.py add "<url>"` runs, added to frontmatter:
+After `scripts/transcript.py add "<url>"` runs, added to frontmatter:
 
 ```yaml
 course: "6.034 Artificial Intelligence, Fall 2010"

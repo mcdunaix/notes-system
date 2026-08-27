@@ -20,6 +20,7 @@ Output:
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -28,14 +29,16 @@ from datetime import date
 from pathlib import Path
 
 # ── Paths ──────────────────────────────────────────────────────────────
-NOTES_DIR = Path.home() / "Documents" / "notes"
-TRANSCRIPTS_DIR = NOTES_DIR / "transcripts"
-INDEX_MD = NOTES_DIR / "INDEX.md"
-SKILL_DIR = Path(__file__).resolve().parent.parent
-TRANSCRIPT_PY = NOTES_DIR / "_scripts" / "transcript.py"
+# The catalog root is $CATALOG_ROOT (repo convention). Fall back to the
+# repo root so the script also works right after a clone without exports.
+ROOT = Path(os.environ.get("CATALOG_ROOT") or Path(__file__).resolve().parent.parent.parent)
+TRANSCRIPTS_DIR = ROOT / "transcripts"
+TRANSCRIPT_PY = ROOT / "scripts" / "transcript.py"
+NEXT_ID_PY = ROOT / "scripts" / "next-id.py"
 CATALOG_PREFIX = "NC"
 
 # ── Category map ───────────────────────────────────────────────────────
+# Mirror of transcript.py's EMOJI_MAP; keep in sync (D-17 fixed vocabulary).
 CATEGORIES = {
     "ai-ml": "🤖",
     "programming": "💻",
@@ -43,7 +46,9 @@ CATEGORIES = {
     "science": "🔬",
     "tutorial": "📚",
     "talks-interviews": "🎙️",
+    "networking": "📡",
     "tech": "📱",
+    "culture": "🎭",
     "uncategorized": "📄",
 }
 
@@ -51,10 +56,26 @@ CATEGORIES = {
 # ── Helpers ────────────────────────────────────────────────────────────
 
 def next_id() -> str:
-    """Scan existing entries for the next NC-XXXX ID."""
+    """Allocate the next NC-XXXX id via scripts/next-id.py.
+
+    The allocator scans transcripts/, references/, and Index.md, so ids
+    never collide across folders. Falls back to a local transcripts-only
+    scan only if the allocator is missing.
+    """
+    if NEXT_ID_PY.exists():
+        result = subprocess.run(
+            ["python3", str(NEXT_ID_PY)],
+            capture_output=True, text=True, timeout=15,
+        )
+        m = re.search(r"(NC-\d{4})", result.stdout)
+        if m:
+            return m.group(1)
     max_num = 0
     for md_file in sorted(TRANSCRIPTS_DIR.rglob("*.md")):
-        m = re.search(rf"^{re.escape(CATALOG_PREFIX)}-(\d+)", md_file.read_text())
+        m = re.search(
+            rf'^id:\s*["\']?{re.escape(CATALOG_PREFIX)}-(\d+)',
+            md_file.read_text(), re.MULTILINE,
+        )
         if m:
             num = int(m.group(1))
             if num > max_num:
@@ -116,8 +137,15 @@ def guess_category(text: str, title: str) -> list[str]:
                   "deep learning", "transformer", "gpt"],
         "talks-interviews": ["interview", "talk", "conversation",
                              "podcast", "discussion"],
+        "networking": ["network", "networking", "mesh", "subnet", "firewall",
+                       "router", "routing", "protocol", "internet",
+                       "bandwidth", "latency", "packet", "dns"],
         "tutorial": ["tutorial", "how to", "guide", "beginner",
                      "step by step"],
+        "culture": ["indigenous", "decolonizing", "decolonization", "elder",
+                    "ancestral", "ancestors", "tradition", "heritage",
+                    "ceremony", "folklore", "oral history", "ritual",
+                    "colonialism"],
     }
     matched = []
     for cat, keywords in rules.items():
@@ -136,7 +164,7 @@ def create_entry(title: str, text: str, categories: list[str],
     entry_id = next_id()
     today = date.today().isoformat()
     slug = slugify(title)
-    filename = f"{today}_{slug}.md"
+    filename = f"{entry_id}_{slug}.md" if slug else f"{entry_id}.md"
     filepath = cat_dir / filename
 
     word_count = len(text.split())

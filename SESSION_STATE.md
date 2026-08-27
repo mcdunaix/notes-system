@@ -15,6 +15,45 @@ root is the catalog root (`$CATALOG_ROOT`); every skill path is parameterized.
 
 ## Resume here
 
+### 2026-08-26 (2nd session): Shipping audit before GitHub publish; 3 leak classes fixed
+
+**Session arc.**
+1. User asked whether the repo is ready to ship from GitHub to other users.
+   Ran the full gate: 5 test vectors GREEN, `verify` exit 0, `next-id.py
+   --check` clean, fresh-clone quick start (rsync to /tmp, no git) passes,
+   `install-skills.sh` verified against a temp HERMES_SKILLS dir (5 linked,
+   idempotent on second run), D-12 scan clean (all remaining `--` are
+   frontmatter fences, table separators, or CLI flags).
+2. Found and fixed a real leak: `skills/content-catalog/scripts/
+   catalog-add-from-video.py` still hardcoded the author's vault paths
+   (`Path.home() / "Documents" / "notes"`, `INDEX.md`, `_scripts/
+   transcript.py`). Parameterized to `$CATALOG_ROOT` with a repo-root
+   fallback, pointed at `scripts/transcript.py` and `scripts/next-id.py`,
+   delegated id allocation to `next-id.py` (closes the cross-folder
+   collision class the allocator fix guards), aligned filenames to the
+   `NC-####_slug.md` protocol (D-13), and added the missing networking +
+   culture categories (D-17). Also fixed a latent bug in the script's
+   fallback id scan: `^NC-` never matched frontmatter, so it always
+   returned NC-0001; now scans `id:` lines with re.MULTILINE. Verified:
+   allocator branch NC-0001, fallback branch NC-0008 with NC-0007 present.
+3. Redacted personal identifiers in `skills/content-catalog/references/
+   telegram-gateway.md`: author's Telegram user ID (<your_telegram_user_id>), bot ID
+   prefix (<BOT_ID>), stale pairing code (<PAIRING_CODE>), and the `_scripts/`
+   path. Swept the remaining `_scripts/transcript.py` references in three
+   more reference files to `scripts/transcript.py`; the intentional pitfall
+   note in `lecture-walkthrough/references/transcript-script-notes.md`
+   stays.
+
+**Outstanding before publish.** None code-side. The two decisions left are
+the user's: pick a LICENSE (README still says none chosen; MIT recommended
+for a permissive personal-tooling repo) and create the GitHub remote (no
+remote is configured yet; README quick start has a `<this-repo>`
+placeholder). SESSION_STATE.md itself documents provenance and ships fine.
+
+**Files changed.** skills/content-catalog/scripts/catalog-add-from-video.py,
+skills/content-catalog/references/{telegram-gateway,instagram-transcription-pipeline,lecture-walkthrough-example,yt-dlp-vtt-fallback}.md.
+Uncommitted at end of session.
+
 ### 2026-08-26 (1st session): Repo built from the vault system, Hermes-ready, empty database, new review-discussion-probe skill
 
 **Session arc.**

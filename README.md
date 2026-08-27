@@ -123,5 +123,4 @@ Full detail: `docs/STORAGE_PROTOCOL.md`.
 
 ## License
 
-None chosen yet. If you plan to publish this repo, pick a license before
-shipping; the scripts and skills are original work and are yours to license.
+MIT. See LICENSE for the full text. The scripts and skills are original work.
