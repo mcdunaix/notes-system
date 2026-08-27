@@ -1,0 +1,17 @@
+# System dotfiles, media, and derived state are not part of the database.
+.DS_Store
+__pycache__/
+*.pyc
+
+# Personal media (audio/video embeds) never ship.
+*.mp3
+*.mp4
+
+# Obsidian local workspace state.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# Transient fetch artifacts.
+temp_*.vtt
+temp_*.srt
+tmp/
