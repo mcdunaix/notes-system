@@ -15,6 +15,58 @@ root is the catalog root (`$CATALOG_ROOT`); every skill path is parameterized.
 
 ## Resume here
 
+### 2026-08-26 (5th session): R1 resolved by history rewrite (unpushed); series clustering; cold-read README
+
+**Session arc.**
+1. Goal set: scrub private info from the tree, make the README readable
+   cold, guarantee that a cataloged video series clusters (the pre-repo
+   filing system scattered series and failed to create folders).
+2. R1 decided as rewrite. `git filter-repo --replace-text --mailmap`
+   replaced the bot username, bot display name, bot ID prefix, pairing
+   code, and Telegram user ID with the same placeholders the working
+   tree already uses, replaced the real name with the publishing
+   account name, and remapped the first commit's author (a school
+   email identity) to the mcdunaix identity. Post-rewrite audit: zero
+   blob hits for all seven strings across all revisions; every commit
+   authored by mcdunaix. ALL COMMIT HASHES CHANGED; hashes cited in
+   older entries below refer to the pre-rewrite history. A pre-rewrite
+   mirror sits at /tmp/notes-system-backup.git until the push is
+   verified.
+3. LICENSE copyright holder switched from the real name to mcdunaix
+   (tree and, via the rewrite, all history).
+4. Series clustering shipped, R-15 honored (13 vectors in
+   scripts/test_series_clustering.py written RED first). `add --series`
+   writes `series:` frontmatter; later parts inherit the series' category
+   folder over their own keyword guess (apply_series/resolve_categories);
+   the dashboard clusters series members contiguously anchored at the
+   lowest member id and adds a Series column when a category has any;
+   `verify` exits 1 on a series split across folders (series_conflicts).
+   End-to-end proof in a temp catalog: cluster order NC-0002/NC-0004
+   contiguous, split simulation caught.
+5. README rewritten for a cold read: job stated in the first sentence,
+   pipeline/protocol/skills named as the three shipped parts, D-# codes
+   introduced as citations into STORAGE_PROTOCOL, vault provenance and
+   "the author's setup" narrative removed, --topics and --series
+   documented at the worked example. Series pinned in STORAGE_PROTOCOL
+   ("Series" subsection), CLAUDE.md, and content-catalog SKILL.md.
+
+**BLOCKED, next action.** `git push --force origin main` needs the
+user's explicit go-ahead (permission gate on rewriting remote history;
+correct call, it is irreversible for the remote). Until pushed, GitHub
+still serves the old history and R1 is only locally resolved. After a
+verified push, delete /tmp/notes-system-backup.git. GitHub may retain
+old commits in caches/forks; the bot token was never fully committed
+(prefix only), rotating it via BotFather is still the belt-and-braces
+close.
+
+**Gotchas.**
+- CI's test glob picks up test_series_clustering.py automatically.
+- cluster_rows sorts on (series anchor, id) with str() coercion; ids in
+  index rows are already strings.
+- The README series example shows only the command, no pasted output
+  (the override print fires only when the guess differs; do not invent
+  sample output, rerun for real if output is wanted).
+
 ### 2026-08-26 (4th session): Peer review pass; verify covers references/, student on-ramp, PII scrub, CI
 
 **Session arc.**
