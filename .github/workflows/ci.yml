@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # The whole gate is stdlib-only by design (I8): protocol test
+      # vectors, then the empty-database quick start a fresh clone runs.
+      - name: Protocol test vectors (R-15)
+        run: |
+          for t in scripts/test_*.py; do python3 "$t"; done
+      - name: Empty-database pipeline gate
+        run: |
+          python3 scripts/transcript.py verify
+          python3 scripts/transcript.py rebuild
+          python3 scripts/transcript.py list
+          python3 scripts/next-id.py
+          python3 scripts/next-id.py --check
+      - name: Skill installer (against a temp dir)
+        run: |
+          HERMES_SKILLS="$(mktemp -d)" ./scripts/install-skills.sh
+          HERMES_SKILLS="$(mktemp -d)" ./scripts/install-skills.sh --copy
+      # D-12 gate on the shipped prose itself: no em dash anywhere in
+      # skills/docs/README/CLAUDE.md, except the detector commands that
+      # quote the character (all contain `grep -c`).
+      - name: No em dashes in shipped markdown (D-12)
+        run: |
+          if grep -rn '—' --include='*.md' skills docs README.md CLAUDE.md \
+              | grep -v "grep -c"; then
+            echo "D-12 violation(s) above."; exit 1
+          fi

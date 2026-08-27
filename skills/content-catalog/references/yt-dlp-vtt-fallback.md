@@ -74,8 +74,8 @@ cd $CATALOG_ROOT
 python3 scripts/transcript.py add "https://www.youtube.com/watch?v=VIDEO_ID"
 
 # 2. If the API failed and the entry wasn't created, create manually:
-#    - Find the next NC ID from INDEX.md + 1
-#    - Write a markdown file to transcripts/<category>/<date>_<slug>.md
+#    - Allocate the next NC ID with: python3 scripts/next-id.py
+#    - Write a markdown file to transcripts/<category>/NC-XXXX_<slug>.md
 #    - Include full YAML frontmatter (see SKILL.md for format)
 #    - Rebuild index: python3 scripts/transcript.py rebuild
 

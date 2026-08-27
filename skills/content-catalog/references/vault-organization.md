@@ -1,7 +1,6 @@
 # Vault Organization Conventions
 
-Established during the 2026-06-28 restructuring session. These are the
-golden rules for the notes vault at $CATALOG_ROOT/. Do not deviate.
+The golden rules for the notes vault at $CATALOG_ROOT/. Do not deviate.
 
 ## File explorer ordering
 
@@ -44,7 +43,7 @@ Rules:
 - The index is always `00-Index.md` to sort first
 - Sub-folders get `01-`, `02-`, etc.
 - Files within a sub-folder get `01-`, `02-`, etc.
-- Course landing pages use clean descriptive names: `MIT-6.034.md` not `2026-06-28_5-search-optimal-branch-and-bound-a.md`
+- Course landing pages use clean descriptive names: `MIT-6.034.md` not `NC-0012_search-optimal-branch-and-bound.md`
 
 ## Index.md format (every domain)
 
@@ -62,7 +61,7 @@ Every domain and sub-domain has an Index.md. Format:
 Rules:
 - No emojis, no frontmatter tags, no blockquotes, no HTML
 - Clean bullet lists with bold section headers for sub-domains
-- Description after ` - ` (space, em-dash, space)
+- Description after ` - ` (space, hyphen, space)
 - Back link points to `000-dashboard/Index` from appropriate depth
 
 ## Root Index.md (000-dashboard/Index.md)
@@ -78,14 +77,11 @@ Lists EVERY entry in the vault grouped by broad domain. Clean lists only.
 - [[../01-engineering/01-ai/02-3Blue1Brown|3Blue1Brown - Neural Networks]] - 2 videos
 - [[../transcripts/ai-ml/...|Introduction to Machine Learning]] - PDF
 - [[../01-engineering/02-programming/00-Index|Programming]] - 1 tutorial
+- [[../transcripts/tech/...|Entry Name]] - description
 
 **Culture and Society**
 
 - [[../transcripts/talks-interviews/...|Entry Name]] - description
-
-**IT**
-
-- [[../transcripts/tech/...|Entry Name]] - description
 ```
 
 Links from 000-dashboard/ use `../` prefix (up to root, then into target).
@@ -105,8 +101,8 @@ Course landing pages use plain `[[wikilinks]]`, no Dataview:
 ```markdown
 # MIT 6.034
 
-- [[transcripts/ai-ml/2026-06-28_1-introduction-and-scope|1. Introduction and Scope]]
-- [[transcripts/ai-ml/2026-06-27_2-reasoning-goal-trees-and-problem-solving|2. Reasoning: Goal Trees and Problem Solving]]
+- [[transcripts/ai-ml/NC-0007_introduction-and-scope|1. Introduction and Scope]]
+- [[transcripts/ai-ml/NC-0008_goal-trees-problem-solving|2. Reasoning: Goal Trees and Problem Solving]]
 
 ---
 

@@ -1,10 +1,11 @@
 # Vetting Fixtures: Reviewed Example Set (R-15)
 
-The expected-behavior contract for stages 2–4 (triage → firing → aggregation). This is
+The expected-behavior contract for stages 2 to 4 (triage → firing → aggregation). This is
 not documentation; it is the **test-vector set that must be reviewed before the
 verification logic is trusted** (convention R-15, test vectors before implementation).
 Every claim below is real, drawn from `transcripts/ai-ml/NC-0021_1-introduction-and-scope.md`
-(MIT 6.034 Lecture 1, Patrick Winston).
+(MIT 6.034 Lecture 1, Patrick Winston; NC-0021 is an entry in the author's private
+vault, not shipped in this repo).
 
 Each fixture is a quintuple: **claim → which lenses should fire → per-lens expected
 finding → ground-truth aggregate tier → one-line why**. A correct run of the skill
@@ -51,7 +52,7 @@ UNVERIFIED ×1, SPECULATIVE ×1.
   (Expert Systems Age row).
 - **Lenses fired:** Academic (the primary literature), Practitioner (was it a real,
   evaluated system?).
-- **Expected findings:** Academic, Shortliffe's MYCIN (Stanford, ~1972–76) diagnosed
+- **Expected findings:** Academic, Shortliffe's MYCIN (Stanford, ~1972 to 1976) diagnosed
   bacteremia and meningitis and recommended antibiotics; corroborates. Practitioner,
   a real rule-based system, formally evaluated against clinicians; corroborates (with the
   honest caveat it was never deployed clinically, note in the map, doesn't change tier).
@@ -82,7 +83,7 @@ UNVERIFIED ×1, SPECULATIVE ×1.
   Chomsky quote.
 - **Expected findings:** Academic, McBrearty & Brooks (2000), "The revolution that wasn't"
   (*J. Human Evolution*), directly argues modern behavior accreted gradually over
-  ~200–300 ky in Africa, contradicting a sudden ~50 kya event. Skeptic, the "Upper
+  ~200 to 300 ky in Africa, contradicting a sudden ~50 kya event. Skeptic, the "Upper
   Paleolithic Revolution" framing is a contested minority position, not settled fact.
   Historian, the sudden-leap model has been progressively undercut since ~2000.
 - **Aggregate:** a fired lens surfaces a direct contradiction → **DISPUTED**.
@@ -183,7 +184,7 @@ precedent proves wrong in practice.
    face. The rule is design-law for triage even though it postdates the original brief.
 
 A fourth, lower-stakes note stays an open offer (default: not taken): the set is drawn
-from one lecture (NC-0021) and covers all four tiers and five lenses, but contains no
+from one lecture (NC-0021, in the author's private vault) and covers all four tiers and five lenses, but contains no
 Practitioner-lens fixture on a *technical/algorithmic* claim (a complexity bound, an
 algorithm's behavior). If wanted, add one from a later MIT 6.034 lecture (e.g., the
 search/optimization lectures) before trusting Practitioner triage on that claim class.

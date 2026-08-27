@@ -15,7 +15,7 @@ section plus inline tags on only the claims that did not come back confident.
 Set `export CATALOG_ROOT=/path/to/catalog` before running commands.
 
 This skill is **advisory**. It runs as a follow-up pass on already-cataloged content
-(protocol decision D-2 in `docs/STORAGE_PROTOCOL.md`). It never blocks a video
+(protocol decision D-2, pinned in the author's private vault decision log, not in this repo). It never blocks a video
 from being cataloged and never touches `scripts/transcript.py`, the dashboard index,
 or the domain indices. Its only write is into the walkthrough file it was pointed at.
 
@@ -25,7 +25,9 @@ the same files, read the write-back safety protocol below before touching anythi
 ## Input contract
 
 Takes **an arbitrary path to an existing walkthrough file**, e.g.
-`$CATALOG_ROOT/transcripts/ai-ml/NC-0021_1-introduction-and-scope.md`, and
+`$CATALOG_ROOT/transcripts/ai-ml/NC-0021_1-introduction-and-scope.md` (NC-0021 is
+an entry in the author's private vault, not shipped in this repo; substitute any
+entry of your own), and
 optionally **one named claim** within it, e.g. "check the chimp-DNA percentage in
 NC-0021." It does *not* assume you just ran `transcript.py add`. This is deliberate:
 backfilling any already-cataloged entry is just "run this skill again on another
@@ -64,7 +66,7 @@ Five stages. Do them in order; do not write anything to disk until stage 5.
 | 5 | **Peer review → write-back** | Self-audit the report against its own citations and counts, fix anything it flags, *then* write the file | `references/self-audit.md`, then the protocol below |
 
 Before you build the verification method, read `references/fixtures.md`, the reviewed
-example set (R-15). It is the expected-behavior contract for stages 2–4: your triage and
+example set (R-15). It is the expected-behavior contract for stages 2 to 4: your triage and
 aggregation should reproduce those tiers on those claims. If they don't, the logic is
 wrong, not the fixtures.
 
@@ -86,7 +88,8 @@ first, fire narrowly. See `references/multi-perspective-verification.md`.
 
 ## Tiers (summary: full aggregation rule in the reference doc)
 
-Adapted from `technical-research-survey` (its "Confidence tiers in research output"
+Adapted from `technical-research-survey` (a skill in the author's private vault, not
+shipped in this repo; its "Confidence tiers in research output"
 section): keep CONFIDENT / UNVERIFIED / SPECULATIVE, **drop INFERENCE** (that tier is
 specific to claims about the user's own custom hardware, irrelevant here), **add
 DISPUTED** (sources actively contradict the claim, the exact case a lecturer stating
@@ -103,7 +106,8 @@ outweighs several sources that merely don't address the claim.
 This skill patches the **same danger zone** `lecture-walkthrough` documents as a repeat
 source of corruption: the region just above the `## Full Text` fenced code block has
 silently swallowed or destroyed the transcript before (see that skill's step 6 patch
-pitfall and its NC-0018 incident note). The Vetting Report inserts *directly adjacent*
+pitfall and its NC-0018 incident note; NC-0018 is an entry in the author's private
+vault, not shipped in this repo). The Vetting Report inserts *directly adjacent*
 to that block. Therefore:
 
 1. **Use `write_file`, never a targeted `patch`.** Read the whole file, build the new
@@ -144,22 +148,26 @@ to that block. Therefore:
 
 ## Acceptance gates (from the build brief)
 
-Run these in a live Hermes session (this skill needs `web_search` / `execute_code` /
-`delegate_task` / `browser_navigate`, which don't exist outside Hermes):
+Run these in a live agent session. The Hermes tools `web_search` / `execute_code` /
+`delegate_task` / `browser_navigate` are the reference implementation; outside Hermes,
+use your agent's equivalents (web search, code execution, sub-agents). The original
+gate file is NC-0021 in the author's vault; run the gates against any real transcript
+entry of your own.
 
 - **Fixture check**: run the triage + aggregation against all fixtures in
   `references/fixtures.md`; each must land on its expected tier or the mismatch is
   documented and accepted before proceeding.
 - **Self-audit check**: the `references/self-audit.md` pass runs and any finding is
   *resolved*, not logged, before the file is written.
-- **Live-file check**: pointed at `transcripts/ai-ml/NC-0021_1-introduction-and-scope.md`,
+- **Live-file check**: pointed at `transcripts/<category>/<a real transcript entry in
+  your catalog>.md`,
   produces a `## Vetting Report` positioned per rule (2) with inline tags on only the
   non-confident claims.
 - **Corruption check (exact command):**
-  `sed -n '/^## Full Text$/,$ p' transcripts/ai-ml/NC-0021_1-introduction-and-scope.md | grep -c '^```$'`
+  `sed -n '/^## Full Text$/,$ p' transcripts/<category>/<a real transcript entry in your catalog>.md | grep -c '^```$'`
   must print `2`.
 - **Tag-boundary check (exact command):**
-  `sed -n '/^## Full Text$/,$ p' transcripts/ai-ml/NC-0021_1-introduction-and-scope.md | grep -c 'see Vetting Report'`
+  `sed -n '/^## Full Text$/,$ p' transcripts/<category>/<a real transcript entry in your catalog>.md | grep -c 'see Vetting Report'`
   must print `0`. A claim with no non-confident mention anywhere in the editable
   walkthrough prose gets its tier recorded in the `## Vetting Report` table only; never
   place its inline tag inside `## Full Text` for lack of anywhere else to put it.
@@ -220,10 +228,12 @@ pattern inside `execute_code` (that skill's Search Fallback Strategy, Layer 1) o
   narrative. `references/fixtures.md`'s F1-F8 (D-15, locked) stay valid for stage 2-4
   tiering, but every one is drawn from NC-0021, so none would reach stage 1 extraction
   under D-19. A stage-1 fixture set built from genuinely narrative-pushing content does
-  not exist yet, see notes `docs/STORAGE_PROTOCOL.md` D-19.
+  not exist yet. D-19 is pinned in the author's private vault decision log, not in
+  this repo.
 - **A named-claim request is not carte blanche to skip D-19's classification silently
   (D-20, 2026-07-11).** Deployment is manual only, there is no automated trigger or
-  credibility-based queue (dropped as moot, see D-20 in `docs/STORAGE_PROTOCOL.md`), the user
+  credibility-based queue (dropped as moot; D-20 is pinned in the author's private
+  vault decision log, not in this repo), the user
   invokes this directly on a whole file or on one named claim. When a named-claim
   request targets something the sixth exclusion category would classify as color, do
   not just extract it (silently overriding D-19) and do not just decline it (silently

@@ -63,9 +63,9 @@ SESSION_STATE.md. Deleted all content-side folders.
    returned NC-0001; now scans `id:` lines with re.MULTILINE. Verified:
    allocator branch NC-0001, fallback branch NC-0008 with NC-0007 present.
 3. Redacted personal identifiers in `skills/content-catalog/references/
-   telegram-gateway.md`: author's Telegram user ID (<your_telegram_user_id>), bot ID
-   prefix (<BOT_ID>), stale pairing code (<PAIRING_CODE>), and the `_scripts/`
-   path. Swept the remaining `_scripts/transcript.py` references in three
+   telegram-gateway.md`: the author's Telegram user ID, a bot ID prefix,
+   a stale pairing code (values intentionally not repeated here), and the
+   `_scripts/` path. Swept the remaining `_scripts/transcript.py` references in three
    more reference files to `scripts/transcript.py`; the intentional pitfall
    note in `lecture-walkthrough/references/transcript-script-notes.md`
    stays.
@@ -178,7 +178,7 @@ vocabulary, D-25 no full-text exemption, R-15 test vectors).
    or tests/) covering the empty-db, next-id-across-references, and
    collision cases, so the R-15 vectors extend to the new tooling.
 4. Optional: decide whether the Telegram-gateway capture path
-   (content-catalog's <your_bot_username> pipeline) should be documented as a
+   (content-catalog's Telegram capture-bot pipeline) should be documented as a
    Hermes gateway integration in README, or left as a personal-setup note.
 5. Optional: pick a LICENSE if the repo will be published; README flags
    that none is chosen.

@@ -32,7 +32,8 @@ The walkthrough follows a fixed template (see `lecture-walkthrough` SKILL.md, it
   stating a fact, check the fact. A quote that is pure rhetoric ("purge the word trivial
   from your vocabulary") is not a claim, skip it.
 - **Tables**: history/"Ages" tables pack dates + named milestones densely. Each cell
-  that names a date, a system, or a metric is its own claim. (In NC-0021 the "Ages of AI"
+  that names a date, a system, or a metric is its own claim. (In NC-0021, an entry in
+  the author's private vault, not shipped in this repo, the "Ages of AI"
   table alone yields the Lovelace 1842, Turing 1950, Minsky 1960, MYCIN, $500K/day, and
   Deep Blue 1997 claims.)
 - **Core Idea / Knowledge-Toolbox**: definitional claims stated as fact, and any

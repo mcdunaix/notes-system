@@ -73,12 +73,13 @@ paths. Reference entries allocate their NC id via `scripts/next-id.py`
 ### 5. Verify (the gates)
 
 - `python3 scripts/transcript.py verify` must exit 0 after any edit to a
-  transcript entry. It checks ids, categories, folder drift, the `## Full
-  Text` fence, and D-12 dash violations.
-- Reference entries are not covered by that scan. Gate them manually:
-  `grep -c $'—' references/NC-XXXX_*.md` must print 0, and a
-  `grep -n -- '--' ...` must show no prose uses. `scripts/next-id.py
-  --check` confirms the whole catalog has no id collisions.
+  transcript or reference entry. For transcripts it checks ids,
+  categories, folder drift, the `## Full Text` fence, and D-12 dash
+  violations. For references it checks frontmatter, id integrity across
+  the whole catalog, and D-12 dashes (with `--` allowed inside fenced
+  code blocks, where references quote CLI flags; em dashes banned
+  everywhere). `scripts/next-id.py --check` is the standalone
+  cross-check that the whole catalog has no id collisions.
 - `scripts/transcript.py rebuild` regenerates the dashboard after any set
   of changes.
 

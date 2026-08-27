@@ -3,7 +3,31 @@
 The rules that keep the catalog consistent. This repo was factored out of
 the author's vault, where each rule was pinned as a numbered decision
 (D-#). The ids are kept here as vocabulary so the skills can cite them;
-the decision history itself is not shipped.
+the decision history itself is not shipped. Skills occasionally cite a
+D-# that is not defined below (D-2, D-3, D-4, D-7, D-15, D-19, D-20,
+D-23): those are pinned in the author's private decision log, and every
+citing sentence is written to stand on its own without the definition.
+
+## Vocabulary
+
+- **Catalog**: the whole database of notes rooted at `$CATALOG_ROOT`
+  (this repo's root, the directory containing `scripts/transcript.py`).
+- **Vault**: the same thing seen from Obsidian; the author's original
+  private catalog is also called "the vault" in skill prose.
+- **NC-XXXX**: a Notes Catalog id, e.g. `NC-0042`. Permanent, unique,
+  allocated by the tooling, never reused and never hand-picked.
+- **Entry**: one Markdown file with YAML frontmatter and an NC id.
+  Transcript entries carry raw source text; reference entries carry
+  analysis (reviews, probes, research notes).
+- **Walkthrough**: a transcript entry expanded by the
+  `lecture-walkthrough` skill into a structured, teachable writeup with
+  the raw transcript preserved below.
+- **D-#**: a pinned protocol decision (this document). **R-15**: the rule
+  that core-logic changes get test vectors written before implementation
+  (`scripts/test_*.py`).
+- **Skill**: an instruction file (`SKILL.md`) an agent loads to do one
+  kind of content work. **Gateway**: Hermes's capture channel (e.g. a
+  Telegram bot) that feeds links and media into the pipeline; optional.
 
 ## The invariants (I1-I8)
 
@@ -32,7 +56,8 @@ them. Full detail lives in the module docstring; the readable version:
   Existing files are never renamed (domain indexes wikilink them by path).
 - **I7 `verify` audits** missing/duplicate ids, unparseable frontmatter,
   category/folder drift, `## Full Text` fence integrity, and D-12 dash
-  violations. Exits non-zero on violations.
+  violations, across `transcripts/` and `references/` (see "Entry kinds"
+  for which checks apply to references). Exits non-zero on violations.
 - **I8 rebuild/list/verify run on stdlib alone.** `yt_dlp`,
   `youtube_transcript_api`, and `fitz` import lazily inside the fetch
   paths that need them.
@@ -42,11 +67,17 @@ them. Full detail lives in the module docstring; the readable version:
 | Kind | Directory | Carries | Gate |
 |---|---|---|---|
 | Transcript entry (video, social, PDF) | `transcripts/<category>/` | Raw text under `## Full Text` (fenced) | `transcript.py verify` (automated) |
-| Reference entry (Review, Probe, artifact Discussion, research notes) | `references/` | Analysis, no raw transcript | Manual D-12 grep (verify does not scan references/) |
+| Reference entry (Review, Probe, artifact Discussion, research notes) | `references/` | Analysis, no raw transcript | `transcript.py verify` (automated) |
 
-Both kinds share the NC-XXXX numbering. `verify`'s blind spot on
-`references/` is a known, documented gap (I7 scans transcripts only);
-`scripts/next-id.py --check` covers the whole catalog.
+Both kinds share the NC-XXXX numbering, and `verify` audits both trees:
+references/ entries are checked for parseable frontmatter, id integrity
+against the whole id space (the cross-tree collision class), and D-12
+dashes. One reference-only exemption: `--` inside a fenced code block is
+allowed there, because reference entries legitimately quote CLI flags.
+Em dashes stay banned everywhere. References carry analysis rather than
+transcripts, so the `## Full Text` and folder-drift checks do not apply
+to them. `scripts/next-id.py --check` remains the standalone allocator
+cross-check.
 
 ## Conventions (the pinned decisions)
 

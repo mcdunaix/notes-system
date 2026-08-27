@@ -24,7 +24,8 @@ Storage protocol (invariants this file maintains):
       are never renamed (domain indexes wikilink them by path).
   I7  `verify` audits the invariants (missing/duplicate IDs, unparseable
       frontmatter, category/folder drift, `## Full Text` fence integrity)
-      and exits non-zero on violations.
+      and exits non-zero on violations. references/ is scanned too, for
+      the checks that apply there (frontmatter, id integrity, D-12).
   I8  rebuild/list/verify run on stdlib alone; yt_dlp, youtube_transcript_api,
       and fitz import lazily inside the fetch paths that need them.
 
@@ -45,6 +46,12 @@ Usage:
 
 import re
 import sys
+
+if sys.version_info < (3, 10):
+    sys.exit("transcript.py needs Python 3.10 or newer "
+             f"(you are running {sys.version.split()[0]}). "
+             "Install a current Python from https://www.python.org/downloads/")
+
 import argparse
 import textwrap
 import urllib.parse
@@ -90,10 +97,19 @@ KNOWN_DOMAINS = {"engineering", "culture-society"}
 # Category keywords: scored by hit count, ties broken by list order
 CATEGORY_RULES: list[tuple[str, list[str]]] = [
     ("ai-ml", [
-        "machine learning", "deep learning", "neural network", "llm", "transformer",
+        "machine learning", "deep learning", "neural network", "neural net",
+        "llm", "transformer",
         "artificial intelligence", "gpt", "diffusion", "embedding", "rag",
         "fine-tuning", "fine tuning", "training a model", "token", "attention mechanism",
         "reinforcement learning", "agent", "autonomous", "langchain", "vector database",
+        # The working vocabulary of a deep-learning lecture. Without these,
+        # `neuron` counts drag every neural-network video into science
+        # (found live with the 3Blue1Brown intro lecture; see
+        # test_ai_ml_category.py). Deliberately excluded as too generic:
+        # "layer", "network", "training", "pixel".
+        "weights", "biases", "activation", "activations", "sigmoid",
+        "gradient descent", "backpropagation", "hidden layer", "mnist",
+        "convolutional",
     ]),
     ("science", [
         "neuroscience", "neuron", "synapse", "synaptic", "dendrite", "biology",
@@ -155,6 +171,23 @@ TYPE_ICONS = {"youtube": "🎬", "instagram": "📱", "tiktok": "📱", "pdf": "
 
 class TranscriptUnavailable(RuntimeError):
     """No transcript could be fetched for a video."""
+
+
+def require(module_name: str, pip_name: str):
+    """Import a fetch-path dependency or exit with install instructions (I8).
+
+    Only `add` needs third-party packages; rebuild/list/verify stay
+    stdlib-only. A missing package should read as a setup step, not a
+    traceback.
+    """
+    import importlib
+    try:
+        return importlib.import_module(module_name)
+    except ImportError:
+        sys.exit(f"ERROR: `add` needs the `{pip_name}` package, which is not "
+                 "installed.\n  Install all fetch dependencies with:\n"
+                 "    python3 -m pip install -r requirements.txt\n"
+                 f"  Or just this one:\n    python3 -m pip install {pip_name}")
 
 
 def rel(path: Path) -> Path:
@@ -299,7 +332,7 @@ def extract_video_id(url: str) -> str | None:
 
 def fetch_metadata(video_id: str) -> dict:
     """Fetch video title and channel using yt-dlp (no download)."""
-    import yt_dlp
+    yt_dlp = require("yt_dlp", "yt-dlp")
     try:
         ydl_opts = {
             "quiet": True,
@@ -323,6 +356,7 @@ def fetch_metadata(video_id: str) -> dict:
 
 def fetch_transcript(video_id: str) -> str:
     """Fetch transcript text for a video ID (youtube_transcript_api v1.2.x)."""
+    require("youtube_transcript_api", "youtube-transcript-api")
     from youtube_transcript_api import YouTubeTranscriptApi
     from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
 
@@ -343,7 +377,7 @@ def fetch_transcript(video_id: str) -> str:
 
 def extract_pdf_text(pdf_path: str) -> dict:
     """Extract text from a PDF using pymupdf."""
-    import fitz
+    fitz = require("fitz", "pymupdf")
     doc = fitz.open(pdf_path)
     pages_text = []
     for page in doc:
@@ -392,8 +426,8 @@ def extract_social_metadata(url: str) -> dict:
     except Exception:
         pass
 
+    yt_dlp = require("yt_dlp", "yt-dlp")
     try:
-        import yt_dlp
         ydl_opts = {
             "quiet": True,
             "no_warnings": True,
@@ -646,7 +680,7 @@ def build_index(entries: list[dict] | None = None):
 
     INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
     INDEX_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Index rebuilt at {INDEX_PATH}")
+    print(f"Index rebuilt at {rel(INDEX_PATH)}")
     print(f"  {total} entries ({type_summary}) in {len(grouped)} domains, {total_categories} categories")
 
     for p in unparseable:
@@ -659,8 +693,9 @@ def build_index(entries: list[dict] | None = None):
 
 # ── Verify (I7: invariant audit) ───────────────────────────────────────────
 
-def _find_dash_violations(body: str, rpath: Path) -> list[str]:
-    """Check for em dashes and `--` in non-exempt parts of a transcript entry (D-12/D-25).
+def _find_dash_violations(body: str, rpath: Path,
+                          exempt_fenced_hyphens: bool = False) -> list[str]:
+    """Check for em dashes and `--` in non-exempt parts of an entry (D-12/D-25).
 
     Both forms are banned: a real em dash (the primary target, the character
     itself) and the literal `--` a partner model emits in its place. Per D-25,
@@ -669,10 +704,15 @@ def _find_dash_violations(body: str, rpath: Path) -> list[str]:
     (D-8 still applies to substance, not punctuation). Exempts: YAML
     frontmatter (--- fences), markdown table separator lines (|---). archive/
     entries are never passed here because scan_catalog skips them.
+
+    exempt_fenced_hyphens is the references/ mode: reference entries
+    legitimately quote CLI flags (`--check`) inside fenced code blocks, so
+    `--` is skipped there; em dashes stay banned everywhere.
     """
     problems: list[str] = []
     in_frontmatter = False
     frontmatter_seen = 0  # 0=none, 1=in, 2=exited
+    in_fence = False
 
     for lineno, line in enumerate(body.splitlines(), 1):
         stripped = line.strip()
@@ -686,13 +726,16 @@ def _find_dash_violations(body: str, rpath: Path) -> list[str]:
         if in_frontmatter:
             continue
 
+        if exempt_fenced_hyphens and stripped.startswith("```"):
+            in_fence = not in_fence
+
         # Skip markdown table separator lines like |---|---|
         if re.match(r"^[\s\|:\-]+$", stripped):
             continue
 
         if "—" in stripped:
             problems.append(f"  D-12 violation: em dash `—` at {rpath}:{lineno}")
-        if "--" in stripped:
+        if "--" in stripped and not (exempt_fenced_hyphens and in_fence):
             problems.append(f"  D-12 violation: double-hyphen `--` at {rpath}:{lineno}")
 
     return problems
@@ -700,6 +743,12 @@ def _find_dash_violations(body: str, rpath: Path) -> list[str]:
 
 def cmd_verify() -> int:
     """Audit storage invariants (I7) and D-12 em-dash/double-hyphen violations.
+
+    Scans transcripts/ fully, and references/ for the checks that apply to
+    reference entries: frontmatter parseability, id integrity (shared with
+    the transcript id space, the NC-0034 collision class), and D-12 dashes
+    with fenced code exempt from the `--` check only. References carry
+    analysis, not transcripts, so no Full Text or folder-drift checks.
     Returns process exit code."""
     entries = scan_catalog()
     problems: list[str] = []
@@ -756,7 +805,27 @@ def cmd_verify() -> int:
 
         problems.extend(_find_dash_violations(body, rpath))
 
-    print(f"Checked {len(entries)} entries.")
+    ref_count = 0
+    if REFERENCES_DIR.exists():
+        for path in sorted(REFERENCES_DIR.rglob("*.md")):
+            ref_count += 1
+            rpath = rel(path)
+            fm = read_frontmatter(path)
+            if fm is None:
+                problems.append(f"unparseable frontmatter: {rpath}")
+                continue
+            eid = str(fm.get("id", ""))
+            if not re.match(rf"^{CATALOG_PREFIX}-\d{{4}}$", eid):
+                problems.append(f"missing/malformed id: {rpath}")
+            elif eid in seen_ids:
+                problems.append(f"duplicate id {eid}: {rpath} and {rel(seen_ids[eid])}")
+            else:
+                seen_ids[eid] = path
+            body = path.read_text(encoding="utf-8")
+            problems.extend(_find_dash_violations(body, rpath,
+                                                  exempt_fenced_hyphens=True))
+
+    print(f"Checked {len(entries)} entries, {ref_count} references.")
     for w in warnings:
         print(f"  warning: {w}")
     if problems:
@@ -816,7 +885,7 @@ def cmd_add_youtube(url: str, force: bool = False, topics: str | None = None):
         "categories": categories,
         "topics": topics,
     })
-    print(f"  Saved: {filepath}")
+    print(f"  Saved: {rel(filepath)}")
     finish_add(entries, filepath, cat_id)
 
 
@@ -858,7 +927,7 @@ def cmd_add_social(url: str, source_type: str = "instagram",
         "categories": categories,
         "topics": topics,
     })
-    print(f"  Saved: {filepath}")
+    print(f"  Saved: {rel(filepath)}")
     finish_add(entries, filepath, cat_id)
 
 
@@ -902,7 +971,7 @@ def cmd_add_pdf(pdf_path: str, topics: str | None = None):
         "categories": categories,
         "topics": topics,
     })
-    print(f"  Saved: {filepath}")
+    print(f"  Saved: {rel(filepath)}")
     finish_add(entries, filepath, cat_id)
 
 

@@ -18,6 +18,14 @@ HERMES_SKILLS="${HERMES_SKILLS:-$HOME/.hermes/skills}"
 CATEGORY="productivity"
 MODE="symlink"
 
+# A missing ~/.hermes usually means Hermes is not installed yet. Installing
+# anyway is harmless (the dir is created), but say so instead of guessing.
+if [[ ! -d "$HERMES_SKILLS" ]]; then
+    echo "NOTE: $HERMES_SKILLS does not exist yet (Hermes not installed, or a"
+    echo "      first-time install). Creating it. The skills also work with any"
+    echo "      agent pointed at this repo's skills/ directory."
+fi
+
 if [[ "${1:-}" == "--copy" ]]; then
     MODE="copy"
     shift

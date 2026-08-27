@@ -1,0 +1,5 @@
+# Needed only by `transcript.py add` (fetching content).
+# rebuild / list / verify / next-id.py are stdlib-only and need none of these.
+yt-dlp
+youtube-transcript-api
+pymupdf

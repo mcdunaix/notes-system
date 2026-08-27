@@ -65,7 +65,7 @@ statement, the exception, never the default.
 
 ## Author rules
 
-No em dashes anywhere in the guide, matching the catalog protocol.s own D-12 even
+No em dashes anywhere in the guide, matching the catalog protocol's own D-12 even
 though this skill lives outside that vault: a comma, a colon, or two
 sentences instead, a plain hyphen for structural separators. Jargon gets a
 one-line definition at first use, plus a glossary entry if the ladder has

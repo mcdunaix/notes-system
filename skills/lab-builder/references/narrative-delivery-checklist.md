@@ -18,8 +18,9 @@ guide, per the seductive-details research it cites, it is a weaker one.
 
 ## Execution constraint
 
-Same as Phase 2b: do not use `delegate_task` for this loop, confirmed
-non-blocking in this Hermes instance regardless of invocation shape. Classify
+Same as Phase 2b: do not use `delegate_task` for this loop. In some Hermes
+installs it does not block regardless of invocation shape; verify sub-agent
+completion before reading results. Classify
 each concept's gate result directly, in context, one concept at a time.
 Where to look first: concepts that reached Name, Connect, or Transfer
 (layers 3-5) in Phase 2b are a reasonable place to check before layers 0-2,

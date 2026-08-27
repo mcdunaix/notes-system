@@ -3,7 +3,8 @@
 Nothing checks the vetting output before it reaches the file, a hallucinated citation or
 a miscounted tier from lens-firing would go straight into the walkthrough. This pass is
 the gate. It runs **after** the report is drafted and **before** `write_file`. Its
-discipline, inherited from `technical-research-survey`'s audit-response cycle: when it
+discipline, inherited from the audit-response cycle of `technical-research-survey` (a
+skill in the author's private vault, not shipped in this repo): when it
 finds a problem, **fix it before write-back, do not flag and proceed.**
 
 This is a scoped-down version of `technical-research-survey`'s Quality Audit checklist,
@@ -48,7 +49,7 @@ Resolve by re-tiering (drop to UNVERIFIED/DISPUTED), not by deleting the hedge. 
 
 ### 4. Aggregation replay against the fixtures
 
-Spot-replay the stage-4 aggregation on 2–3 `fixtures.md` claims. If the same triage +
+Spot-replay the stage-4 aggregation on 2 to 3 `fixtures.md` claims. If the same triage +
 rule no longer reproduces the fixtures' expected tiers, the logic drifted mid-run, fix it
 before writing. The fixtures are the contract (R-15); the run conforms to them, not the
 reverse.
@@ -83,7 +84,8 @@ sed -n '/^## Full Text$/,$ p' transcripts/<cat>/FILE.md | grep -c 'see Vetting R
 
 A warning without a gate does not hold. This is the lesson behind the whole catalog's
 `verify` command (NC-0018 was corrupted *after* the pitfall was already documented in
-prose) and behind the third gate above: the 2026-07-10 NC-0021 live run tagged 5 claims
+prose; NC-0018 and NC-0021 are entries in the author's private vault, not shipped in
+this repo) and behind the third gate above: the 2026-07-10 NC-0021 live run tagged 5 claims
 directly inside `## Full Text` while the fence count stayed `2` the entire time. "The
 fence survived" and "nothing between the fences changed" are different claims and need
 different gates. Treat a failed gate as file damage: restore from the read copy and

@@ -55,18 +55,18 @@ entry; if two modes fit, write two entries and cross-link them.
 6. **No em dashes, ever (D-12).** The em dash character (U+2014) and `--`
    used as punctuation are both banned. A comma, a colon, or two sentences
    instead. Plain hyphens for structural separators.
-7. **Gate.** Transcript entries: `python3 scripts/transcript.py verify`
-   must exit 0. Reference entries: `verify` does not scan `references/`
-   (documented gap), so run the manual gate:
-   `grep -c $'—' references/NC-XXXX_*.md` must print 0 (the literal U+2014
-   character is required inside that grep, same as the self-audit command
-   in `lab-builder`), and a
-   `grep -n -- '--' references/NC-XXXX_*.md` must show no prose uses.
+7. **Gate.** `python3 scripts/transcript.py verify` must exit 0 after
+   filing any entry. It scans `transcripts/` and `references/` both:
+   frontmatter, id integrity across the whole catalog, and D-12 dashes.
+   The one reference-only exemption is `--` inside a fenced code block
+   (references legitimately quote CLI flags); em dashes fail everywhere.
 8. **Index.** Add a wikilink to the matching domain/category index
    (`01-engineering/00-Index.md`, `02-culture-society/Index.md`, or the
    category sub-index) so the entry is reachable from Obsidian navigation.
-   `transcript.py rebuild` only regenerates the dashboard, never the
-   hand-curated indexes.
+   On a fresh catalog these indexes do not exist yet; create `references/`
+   and the index file when their first entry lands. `transcript.py
+   rebuild` only regenerates the dashboard, never the hand-curated
+   indexes.
 
 ## Mode 1: Review
 
@@ -255,9 +255,9 @@ Primary sources with URLs, each with a one-line relevance note.
   helper closes that gap. Use it.
 - **No em dashes, no `--` (D-12).** Same rule as every other note in the
   catalog. A comma, a colon, or two sentences.
-- **References entries skip the automated gate.** `transcript.py verify`
-  only scans `transcripts/`. Run the manual D-12 grep from step 7 of the
-  shared protocol on every reference entry you write.
+- **Run the gate on reference entries too.** `transcript.py verify` scans
+  `references/` as well as `transcripts/`; a reference entry is not filed
+  until verify exits 0 (step 7 of the shared protocol).
 - **Index it or it does not exist.** `rebuild` regenerates only the
   dashboard. The hand-curated domain and category indexes are the primary
   Obsidian navigation; a filed note without a wikilink is invisible.

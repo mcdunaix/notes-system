@@ -25,7 +25,8 @@ Set `export CATALOG_ROOT=/path/to/catalog` before running commands.
 ## Pre-check: does the target guide already exist?
 
 Before any phase, check whether a guide already exists at
-`labs/<protocol>/L<N>-*.md`. If it does, read it and evaluate against the
+`labs/<protocol>/L<N>-*.md` (a fresh catalog ships without `labs/`; create
+`labs/<protocol>/` on first use). If it does, read it and evaluate against the
 quality criteria implicit in this skill's own pipeline:
 
 1. Does it have the eight-block contract covered by substance (not just
@@ -43,6 +44,10 @@ If only some checks pass, proceed to Phase 1 but scope it to the gaps.
 Do not re-research what is already correct.
 
 ## Guided mode only
+
+This skill runs interactively. Each phase ends at a gate where the user
+reviews the phase artifact and approves before the next phase begins. Do not
+run all four phases unattended.
 
 ## Input contract
 
@@ -188,11 +193,12 @@ run record fully populated, wikilinked into the relevant domain index.
 > **Self-audit:** see `references/self-audit.md`. Run it before every
 > write-back, not just when something feels off.
 
-- **`delegate_task` does not block in this Hermes instance.** Confirmed
-  2026-07-13: single-task and batch calls both return immediately regardless
+- **In some Hermes installs `delegate_task` does not block.** Single-task and
+  batch calls can return immediately regardless
   of what is requested; results, if they ever arrive, land as a later
   conversation message that a one-shot `hermes chat -q` invocation will
-  never see, because the process exits at the end of its own turn. Never use
+  never see, because the process exits at the end of its own turn. Verify
+  sub-agent completion before reading results, and never use
   `delegate_task` for Phase 2b or 2c's per-concept loops. Classify directly,
   in context, following the checklists' discipline against contamination
   between concepts.

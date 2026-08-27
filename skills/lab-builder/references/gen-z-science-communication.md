@@ -85,7 +85,8 @@ platform bar none.
 
 **Implication:** the text guide is fine as reference material, but it should
 assume the reader encountered the idea through a video first (for Reticulum,
-NC-0024, Data Slayer's walkthrough). The guide should explicitly point to
+NC-0024, Data Slayer's walkthrough, an entry in the author's private vault,
+not shipped in this repo). The guide should explicitly point to
 that source as the on-ramp: "watch this first, then come back here to build
 it."
 

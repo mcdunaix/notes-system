@@ -10,12 +10,13 @@ repo).
 
 ## Execution constraint (read this before writing any classification)
 
-Do not use `delegate_task` for this loop. Empirically confirmed (2026-07-13
-pilot, this vault's own testing): `delegate_task` never blocks the calling
+Do not use `delegate_task` for this loop. In some Hermes installs
+`delegate_task` does not block the calling
 turn, single-task or batch, regardless of what is requested. A one-shot
 `hermes chat -q` invocation exits at the end of its own turn, before any
 dispatched subagent can report back, so any classification attempted through
-`delegate_task` in this execution mode will be silently lost. Classify every
+`delegate_task` in this execution mode will be silently lost. Verify
+sub-agent completion before reading results, and classify every
 concept directly, in this same context, following the loop below.
 
 Because there is no subagent isolation, independence between concepts is a

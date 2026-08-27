@@ -3,7 +3,8 @@
 Phase 4 (Verify and build) builds this section from the user's actual
 execution. Extracted from the pattern proven in the notes vault's
 `archive/labs/L0-rns-over-tcp.md` (superseded by `L0-own-your-network.md`,
-which carries the same record forward), the first Reticulum rung built and
+which carries the same record forward; both are examples from the author's
+private vault, not shipped in this repo), the first Reticulum rung built and
 run for real.
 
 ## What this section states, in order

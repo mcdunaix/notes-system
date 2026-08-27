@@ -2,6 +2,11 @@
 
 These cookies are needed for both `yt-dlp` (metadata/download) and `instaloader` (video URL extraction).
 
+**Warning**: this path is optional, and automating Instagram access with your
+logged-in session cookie is against Instagram's terms of service; the account
+can be rate-limited or locked. Prefer a throwaway account, and never commit or
+share the cookie.
+
 ## Automatic (preferred, works for Chrome)
 
 The catalog script calls `yt-dlp --cookies-from-browser chrome` automatically.

@@ -1,4 +1,4 @@
-# Multi-Perspective Verification (Stages 2–4)
+# Multi-Perspective Verification (Stages 2 to 4)
 
 Check each extracted claim from several independent angles, then collapse the angle
 verdicts into one tier. This is the core of the skill and the part the fixture set
@@ -21,12 +21,20 @@ Two consequences of the inversion:
   reusable part is the independent-thread fan-out.
 
 Each fired lens is one independent retrieval + reasoning thread. Behind every lens sits
-the **same retrieval apparatus** as `technical-research-survey`: its source-priority
+the **same retrieval apparatus** as `technical-research-survey` (a skill in the
+author's private vault, not shipped in this repo): its source-priority
 table (GitHub → paper-collection repos → conference proceedings → high-impact journals →
 arXiv → official sites → survey articles), its DDG-lite-in-`execute_code` fallback, and
 its **term-in-source** verification (does the cited source actually contain the term or
 quote attributed to it, the check that caught a fabricated term in a past session). The
 lens defines *what question to ask*; that apparatus is *how you answer it*.
+
+Without that skill, the apparatus is self-contained in four rules. Retrieval means
+your agent's own web search and page fetching. Source priority: primary docs and
+specs first, then peer-reviewed work, then reputable secondary sources, then forums.
+Every citation must pass a term-in-source check: the claim's key term literally
+appears in the cited source. Log a claim unverified rather than citing a source
+that does not contain it.
 
 ## The five fixed lenses
 
@@ -51,7 +59,7 @@ one.
 Triage produces one of three routes per claim:
 
 1. **Externally checkable → fire the applicable lenses.** The normal path. Pick the
-   lenses whose question is live for this claim (usually 2–3, occasionally all five for a
+   lenses whose question is live for this claim (usually 2 to 3, occasionally all five for a
    hype-laden historical claim). Record *why* each fired or was skipped, stage 5 audits
    the triage, and `fixtures.md` reviews it.
 2. **Analytically verifiable → check by inspection, fire zero external lenses.** Pure

@@ -1,11 +1,21 @@
 # Notes Catalog System
 
+[![CI](https://github.com/mcdunaix/notes-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mcdunaix/notes-system/actions/workflows/ci.yml)
+
 A personal knowledge catalog with a pipeline, not a vault full of someone
 else's notes. This repo ships the **tooling and the protocol** for a
 transcript and research catalog with persistent NC-XXXX IDs: an ingestion
 script, a storage protocol with an automated integrity audit, hand-curated
 Obsidian-native navigation, and the agent skills that expand raw material
 into structured notes.
+
+In practice: you paste a YouTube link (or a PDF path, or an Instagram/
+TikTok URL), and the tool saves the full text as a Markdown note with a
+permanent ID, sorts it into a category, and keeps an index page current.
+Agent skills then turn those raw notes into study material: structured
+walkthroughs of lectures, reviews of tools and hardware, hands-on lab
+guides, and fact-checks. If you learn from videos and want those hours to
+leave a searchable, growing library behind, that is the job this does.
 
 **The database ships empty and folder-less.** No personal notes are included
 and no content folders are committed. Clone it, open it in Obsidian, and the
@@ -33,15 +43,29 @@ notes-system/
 │   ├── review-discussion-probe/ three modes: Review, Discussion, Probe
 │   ├── lab-builder/             build hands-on lab guides from research
 │   └── lecture-vetting/         fact-check a walkthrough's claims
-└── docs/
-    ├── STORAGE_PROTOCOL.md      the invariants and conventions
-    └── INGESTION_PIPELINE.md    the ingest-to-file routine map
+├── docs/
+│   ├── STORAGE_PROTOCOL.md      the invariants, conventions, and vocabulary
+│   └── INGESTION_PIPELINE.md    the ingest-to-file routine map
+└── requirements.txt             fetch dependencies (`add` only; the rest is stdlib)
 ```
 
 No content folders ship. During use the catalog grows:
 `add` creates `transcripts/<category>/`, `rebuild` creates
 `000-dashboard/Index.md`, and the agent maintains the hand-curated domain
 and category `00-Index.md` files (see `docs/STORAGE_PROTOCOL.md`).
+
+## Prerequisites
+
+- **Python 3.10 or newer** (`python3 --version` to check; the scripts
+  refuse older versions with a clear message).
+- **pip packages for fetching content**, installed in step 3 below. Only
+  `add` needs them; everything else runs on the standard library.
+- **Optional: [Obsidian](https://obsidian.md)**, a free note-taking app.
+  The catalog is plain Markdown, so any editor works, but the wikilink
+  navigation is built for Obsidian.
+- **Optional: Hermes Agent** (or Claude Code, or any agent that reads a
+  directory's `CLAUDE.md`). The pipeline works from a bare terminal; an
+  agent is what runs the skills for you.
 
 ## Quick start
 
@@ -52,23 +76,45 @@ git clone https://github.com/mcdunaix/notes-system.git && cd notes-system
 # 2. Set the catalog root for the skills (or export it once in your shell).
 export CATALOG_ROOT="$(pwd)"
 
-# 3. Sanity-check the empty database (stdlib only).
+# 3. Install the fetch dependencies (needed by `add` only).
+python3 -m pip install -r requirements.txt
+
+# 4. Sanity-check the empty database (stdlib only).
 python3 scripts/transcript.py verify
 python3 scripts/transcript.py rebuild
 python3 scripts/next-id.py            # prints NC-0001
 
-# 4. Open the folder in Obsidian. Once entries exist and you have run
+# 5. Open the folder in Obsidian. Once entries exist and you have run
 #    `rebuild`, 000-dashboard/Index.md is the landing page.
 
-# 5. Install the skills into Hermes (or copy them yourself).
+# 6. Install the skills into Hermes (or copy them yourself).
 ./scripts/install-skills.sh           # symlinks skills/ into ~/.hermes/skills/productivity/
 
-# 6. Add your first piece of content.
+# 7. Add your first piece of content.
 python3 scripts/transcript.py add "https://youtube.com/watch?v=..." --topics "topic phrase"
 ```
 
-`add` needs `yt_dlp`, `youtube_transcript_api`, and `pymupdf`;
-`rebuild` / `list` / `verify` / `next-id.py` are stdlib-only.
+## Your first entry, what actually happens
+
+```
+$ python3 scripts/transcript.py add "https://www.youtube.com/watch?v=aircAruvnKk" \
+      --topics "neural network basics"
+Fetching transcript for video ID: aircAruvnKk
+  Title: But what is a neural network? | Deep learning chapter 1
+  Channel: 3Blue1Brown
+  Categories: ai-ml, science, programming
+  ID: NC-0001
+  Saved: transcripts/ai-ml/NC-0001_neural-network-basics.md
+Index rebuilt at 000-dashboard/Index.md
+  1 entries (1 youtube) in 1 domains, 1 categories
+```
+
+One command did the whole mechanical pass: fetched the metadata and the
+full transcript, guessed a category from keyword scoring, assigned the
+next free ID, saved a Markdown note (frontmatter + summary header + the
+raw transcript in a fenced block), and regenerated the dashboard. The
+judgment calls (is the category right, what should the note become) are
+yours, or your agent's: that is what the skills are for.
 
 ## The skills
 
@@ -85,8 +131,11 @@ note); nothing hardcodes the author's machine.
 
 ## Built for Hermes Agent
 
-This repo is shaped for Hermes Agent (and works with any agent that reads
-`CLAUDE.md` or `AGENTS.md` in the directory it operates in):
+Hermes Agent is an agent harness: it runs an AI agent on your machine,
+auto-loads per-directory instructions, and executes packaged skills
+(`SKILL.md` files) on demand. This repo is shaped for it, and works with
+any agent that reads `CLAUDE.md` or `AGENTS.md` in the directory it
+operates in (Claude Code included):
 
 - **Session on-ramp.** A Hermes session started in this repo auto-loads
   `CLAUDE.md` (orientation, conventions, commands) and can resume from
@@ -116,11 +165,36 @@ This repo is shaped for Hermes Agent (and works with any agent that reads
 - `transcripts/<category>/` holds transcript entries (they carry the raw
   text under `## Full Text`); `references/` holds research and artifact
   notes with the same NC numbering.
-- `verify` audits storage invariants after any external edit. Run it.
+- `verify` audits storage invariants across both `transcripts/` and
+  `references/` after any external edit. Run it.
 - Domain and category indexes are hand-curated and are the primary Obsidian
   navigation; `rebuild` only regenerates the dashboard.
 
-Full detail: `docs/STORAGE_PROTOCOL.md`.
+Full detail: `docs/STORAGE_PROTOCOL.md`, including a vocabulary section
+that defines the shorthand the skills use (NC id, entry, walkthrough,
+D-#, R-15, vault, gateway).
+
+## Troubleshooting
+
+- **`ModuleNotFoundError` or an install prompt when running `add`**: the
+  fetch dependencies are missing. `python3 -m pip install -r
+  requirements.txt`. Everything except `add` runs without them.
+- **"transcript.py needs Python 3.10 or newer"**: your `python3` is too
+  old. Install a current version from python.org and retry.
+- **"Transcript not available" on a YouTube video**: the video has no
+  captions in any language (or captions are disabled). There is nothing
+  to fetch; the fallback is downloading the audio and transcribing it
+  locally, which the `content-catalog` skill documents.
+- **Instagram/TikTok add returns no content**: those platforms usually
+  require logged-in browser cookies. The tool tries your Chrome cookies
+  first. `skills/content-catalog/references/instagram-cookies.md` covers
+  the details and the caveats; treat that whole path as optional.
+- **`rebuild` says "No transcripts found."**: normal on an empty catalog.
+  The dashboard appears after your first `add`.
+- **`verify` fails after you edited an entry by hand**: the output names
+  the file and the broken invariant (lost `id:` line, category/folder
+  mismatch, broken `## Full Text` fence, or a banned dash). Fix the named
+  line and rerun until it exits 0.
 
 ## License
 

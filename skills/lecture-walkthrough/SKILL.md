@@ -127,7 +127,8 @@ python3 scripts/transcript.py add --topics "topic one, topic two" "TIKTOK_URL"
 #   ffmpeg -y -i "/tmp/<slug>_dl" -vn -acodec libmp3lame -q:a 4 "/tmp/<slug>.mp3"
 yt-dlp -x --audio-format mp3 -o "/tmp/<slug>" "TIKTOK_URL"
 
-# Step 4: Transcribe with mlx_whisper (Apple Silicon / local model)
+# Step 4: Transcribe with mlx_whisper (Apple Silicon; on other platforms
+#          use openai-whisper or faster-whisper)
 mlx_whisper /tmp/<slug>.mp3 --output-dir /tmp/
 
 # Step 5: Read the transcription to identify the talk's structure
@@ -153,8 +154,8 @@ rmdir ../uncategorized/ 2>/dev/null
 #          Update categories list to match the destination folder.
 #          Update the creator field: use the DISPLAY NAME, not just the handle.
 #          Check the creator's profile page (e.g. tiktok.com/@handle) for
-#          the real name/bio. TikTok usernames like "thotij" are handles;
-#          the display name is "Dr. Thomas Tijerina".
+#          the real name/bio. TikTok usernames like "prof.avila" are handles;
+#          the display name is "Dr. Maria Avila".
 #          Replace the stub body with the walkthrough.
 #          Paste the transcription under ## Full Text in a code block.
 #          Add an audio embed between the metadata block and walkthrough
@@ -561,7 +562,7 @@ patch(path="transcripts/ai-ml/NC-00XX_NEW-lecture.md",
 
 For lecture series with sub-numbered entries (12a → 12b), use the display name without a leading number: ``12a: Neural Nets``, not ``12a. Neural Nets``.
 
-After the nav patch, re-run the verify gate (step 6b), a mis-anchored fence match here once swallowed the nav links *inside* the transcript code block and destroyed the `## Full Text` heading (NC-0018, repaired 2026-07-08).
+After the nav patch, re-run the verify gate (step 6b), a mis-anchored fence match here once swallowed the nav links *inside* the transcript code block and destroyed the `## Full Text` heading (NC-0018, an entry in the author's private vault, not shipped in this repo; repaired 2026-07-08).
 
 **Step 2, Add Next link to the previous lecture:**
 
@@ -583,6 +584,8 @@ patch(path="transcripts/ai-ml/PREVIOUS-lecture.md",
 **Do NOT just append**: appending creates duplicate ``Up:`` and orphaned ``Previous:`` lines that break the navigation rendering.
 
 **Step 3, Add lecture link to course landing page:**
+
+This example is from a live catalog; the file and anchor strings will differ in yours.
 
 ```bash
 patch(path="$CATALOG_ROOT/01-engineering/01-ai/01-MIT-6.034.md",
@@ -609,7 +612,8 @@ After adding and walkthroughing a new entry, add a wikilink to the appropriate d
 **Standalone video (no series):** Add to the top-level domain index (e.g., ``01-engineering/00-Index.md``) under the relevant topic section:
 
 ```bash
-# Find the existing entry in the destination index, then insert
+# Find the existing entry in the destination index, then insert.
+# Example from a live catalog: the index paths and anchors will differ in yours.
 patch(path="$CATALOG_ROOT/01-engineering/00-Index.md",
       old_string="## Programming\n\n- [[../../transcripts/programming/...]]",
       new_string="## Programming\n\n- [[../../transcripts/programming/...]]\n\n## Science\n\n- [[../../transcripts/ai-ml/NC-00XX_title|Display Title]] - MM:SS")
@@ -619,7 +623,9 @@ Match the existing format: ``- [[relative/path|Display Title]] - Duration`` (or 
 
 **Series lecture:** Add to the course landing page (e.g., ``01-MIT-6.034.md``), see Step 3 above.
 
-Check which domain indices exist and which one fits:
+Check which domain indices exist and which one fits. On a fresh catalog none
+of these exist yet; create the domain/category index when its first entry
+lands (per `docs/STORAGE_PROTOCOL.md`). Example layout from a live catalog:
 - ``01-engineering/00-Index.md``, AI, Programming, Science
 - ``01-engineering/01-ai/00-Index.md``, AI-specific (MIT 6.034, 3Blue1Brown)
 - ``01-engineering/02-programming/00-Index.md``, Programming
@@ -643,13 +649,11 @@ Check which domain indices exist and which one fits:
 
 Use block quotes (`> text`) for direct quotes from the lecturer.
 
-### 9. (reserved)
-
 ## Pitfalls
 
 > **References:** See `references/transcript-script-notes.md` for known bugs in the transcript.py script and fix steps.
 > **Walkthrough assembly:** See `references/inject-walkthrough-assembly.md` for the Python script pattern that reliably injects a walkthrough between the metadata and `## Full Text` without risk of destroying the transcript code block.
-> **Lab guide pattern:** See `references/lab-guide-pattern.md` for how this skill's structure template (Hook, Core Idea, Toolbox, Architecture, Results, Punchline) can be repurposed as a skeleton for hands-on lab guides. The reference also covers **embedded software walkthroughs** (click-path instructions for GUI tools like REW, WINISD, VituixCAD) and **hardware lab considerations** (circuit diagrams, BOMs, measurement procedures): both added during the speaker-design lab build on 2026-07-12.
+> **Lab guide pattern:** See the lab-builder skill's `references/lab-guide-pattern.md` for how this skill's structure template (Hook, Core Idea, Toolbox, Architecture, Results, Punchline) can be repurposed as a skeleton for hands-on lab guides. The reference also covers **embedded software walkthroughs** (click-path instructions for GUI tools like REW, WINISD, VituixCAD) and **hardware lab considerations** (circuit diagrams, BOMs, measurement procedures): both added during the speaker-design lab build on 2026-07-12.
 > **Abstraction in teaching:** See `references/abstraction-in-teaching.md` for the pedagogical theory behind the Hook/Toolbox/Punchline sequence. Covers Bruner's three modes, concreteness fading, the White-Mitchelmore 4-phase model, and practical strategies for writing walkthroughs that transfer understanding rather than just summarize.
 > **Metaphor and narrative design:** This is a gated, per-concept technique, not a default pass over every walkthrough. The full research (Lakoff, Gentner, Schon on source domains; Haven, Storr, Zak on story craft; delivery patterns and seductive-details research) lives in the author's vault as NC-0031 and is not shipped with this repo. The shipped guidance in `references/abstraction-in-teaching.md` covers the sequence; treat narrative as opt-in per concept, with an explicit gate.
 > **MIT 6.034 series:** See `references/mit-6.034-walkthrough-conventions.md` for the Winston lecture format conventions (numbered sections, body metadata, reference structure, catalog entry).
@@ -692,7 +696,7 @@ Use block quotes (`> text`) for direct quotes from the lecturer.
 - **Domain field must match the parent index.** The frontmatter `domain:` field ("engineering", "culture-society") must match the parent domain directory (01-engineering, 02-culture-society) or the dashboard index may misgroup the entry. The script generates a stub with the real NC-XXXX `id:` when you run `add`. Copy frontmatter verbatim from the stub file, do not retype it. Retyped frontmatter drops the `id:` line.
 - **Whisper transcript may have artifacts.** mlx_whisper on short-form audio sometimes merges segments or mishears names (e.g. "bio akomolafe lafe" for "Bayo Akomolafe"). Clean up proper names and quoted material before writing the walkthrough. Verify quoted author/book titles against web search results.
 - **Short-form entries need shorter walkthroughs.** A 90-second TikTok does not need 8 sections. Trim to 4-6 tight sections that follow the talk's actual structure. The reference section still needs real citations for any authors quoted; don't pad with tangential sources.
-- **Creator display name, not just the handle.** TikTok, Instagram, and similar platforms show a handle (e.g. @thotij) but the creator likely has a display name or real name (e.g. "Dr. Thomas Tijerina"). Navigate to the creator's profile page to get it. Use the display name as the `channel:` field and list both in the body metadata: `**Creator:** Dr. Thomas Tijerina (@thotij)`.
+- **Creator display name, not just the handle.** TikTok, Instagram, and similar platforms show a handle (e.g. @prof.avila) but the creator likely has a display name or real name (e.g. "Dr. Maria Avila", a humanities professor, or "Alex Rivers", a conference speaker posting as @rivers.talks). Navigate to the creator's profile page to get it. Use the display name as the `channel:` field and list both in the body metadata: `**Creator:** Dr. Maria Avila (@prof.avila)`.
 - **Page H1 title = topic, not raw source title.** For standalone entries (no series), the page H1 and frontmatter `title:` should reflect the TOPIC (matching the slug from D-13), not the video's raw title which optimizes for clicks. The raw source title can appear in the body metadata or not at all. For series lectures, the H1 follows the series convention (lecture number + title).
 - **Video embedding requires approval.** Never embed a video file into a catalog entry without asking first. The user considers storage impact and clutter before giving the go-ahead. The embedding pattern (when approved): `<video controls width="360">` tag in Obsidian-compatible HTML, or `![[file.mp4]]` wikilink. Video files live alongside the .md in the same `transcripts/<category>/` directory.
 - **Instagram downloads need browser cookies.** Instagram blocks unauthenticated yt-dlp downloads. Always use `--cookies-from-browser chrome` when downloading from Instagram. TikTok downloads work without cookies.

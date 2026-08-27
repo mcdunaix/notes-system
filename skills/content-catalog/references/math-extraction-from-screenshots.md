@@ -128,14 +128,14 @@ exact equation content, even though the *visual* notation (≤, subscripts, etc.
 isn't present. The spoken definition is structured enough to reconstruct the
 formal math.
 
-### Example (this session)
+### Example
 
 **Source:** Screenshot of Patrick Winston's 6.034 slide on admissible vs.
 consistent heuristics for A* search.
 
 **OCR gave:** `amiss: BLE = HUA) < DA // CONSISTS | H&,c)- Hao <D (x4)`
 
-**Transcript search gave (from `2026-06-28_5-search-optimal-branch-and-bound-a.md`):**
+**Transcript search gave (from `NC-0012_search-optimal-branch-and-bound.md`):**
 - Admissible: "the estimated distance between any node X and the goal is less
   than or equal to the actual distance between X and the goal"
   → h(X) ≤ actual_distance(X, G)

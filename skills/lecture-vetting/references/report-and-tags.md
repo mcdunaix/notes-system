@@ -10,7 +10,8 @@ are a signal, and a signal on everything is noise.
 **Placement:** immediately after `## References` if that section exists; otherwise
 immediately before `## Full Text`. Follows the same rule `lecture-walkthrough` uses for
 its own References block (metadata about the lecture sits between the walkthrough and the
-raw transcript). **The test file `NC-0021_1-introduction-and-scope.md` has no
+raw transcript). **The test file `NC-0021_1-introduction-and-scope.md` (an entry in the author's
+private vault, not shipped in this repo) has no
 `## References` section**, there the report goes directly before `## Full Text`. Never
 place it after the `## Full Text` code block.
 
@@ -27,9 +28,9 @@ see D-2. Vetted <describe method: e.g. "via DDG-lite + arXiv + primary papers">.
 |---|-------|------|---------------|---------|
 | 1 | Turing's "Computing Machinery and Intelligence" published 1950 | CONFIDENT | Academic + Historian concur | Mind 59(236), 1950 |
 | 2 | Minsky's *Steps Toward AI* dated 1960 | DISPUTED | Academic/Historian: paper is 1961 (Proc. IRE 49), off by a year | Proc. IRE 49(1), Jan 1961 |
-| 3 | Gate-scheduling saved Delta ~$500K/day in jet fuel | DISPUTED | Economist: figure only in lecture retellings; expert-systems ROI documented as overstated. Skeptic: no audited primary source |, (no primary source located) |
+| 3 | Gate-scheduling saved Delta ~$500K/day in jet fuel | DISPUTED | Economist: figure only in lecture retellings; expert-systems ROI documented as overstated. Skeptic: no audited primary source | (no primary source located) |
 | 4 | Gate-scheduling expert systems were deployed at Atlanta | UNVERIFIED | Practitioner: one trade source confirms deployment; none contradict | <single source> |
-| 5 | "The MIT Definition of AI: algorithms enabled by constraints…" | SPECULATIVE | Academic: idiosyncratic to Winston, not a consensus definition; no true/false |, |
+| 5 | "The MIT Definition of AI: algorithms enabled by constraints…" | SPECULATIVE | Academic: idiosyncratic to Winston, not a consensus definition; no true/false | (none) |
 ```
 
 ### Column rules
@@ -44,7 +45,8 @@ see D-2. Vetted <describe method: e.g. "via DDG-lite + arXiv + primary papers">.
     lens, what it found, where the disagreement is. Not "sources disagree." Write
     "Practitioner: standard in production per X; Academic: Y (2024) found it ineffective
     at scale, contradicts." A bare tier with a vague note means stage 3 was skipped.
-- **Sources**: concrete citation(s) the lenses produced; `, ` if none was located (itself
+- **Sources**: concrete citation(s) the lenses produced; write "(none located)" if none
+  was located (itself
   informative for UNVERIFIED/SPECULATIVE). Every citation here is checked by the stage-5
   self-audit (term-in-source) before this table reaches disk.
 
@@ -84,7 +86,8 @@ Format: `[<TIER>, see Vetting Report]`. Rules:
 
 ## Why point back instead of inline citations
 
-`technical-research-survey`'s inline style (`[single source: <name>]`) was built for
+`technical-research-survey` (a skill in the author's private vault, not shipped in
+this repo) uses an inline style (`[single source: <name>]`) built for
 research-doc prose. A walkthrough mixes prose, block quotes, tables, and LaTeX, inline
 citations would wreck table alignment and clutter quotes. Centralizing every citation in
 the report table and leaving only a typed pointer in the prose keeps the walkthrough

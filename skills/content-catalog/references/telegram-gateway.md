@@ -1,16 +1,16 @@
 # Telegram Gateway for Catalog Bot
 
-The `@<your_bot_username>` Telegram bot receives links from the user's phone and
+Your capture bot (`@<your_bot_username>`) receives links from your phone and
 Hermes auto-processes them into the content catalog.
 
-## Setup (completed June 24, 2026)
+## Setup
 
 1. **Bot creation**: Via @BotFather on Telegram, `/newbot` → name: `<YourBotName>`,
    username: `<your_bot_username>`
 2. **Token**: `<BOT_ID>:<SECRET>` (from @BotFather) → set in `~/.hermes/.env` as `TELEGRAM_BOT_TOKEN`
 3. **Gateway**: Started via `hermes gateway run` (background process)
-4. **User approval**: First message from user generated a pairing code
-   (`<PAIRING_CODE>`) → approved via `hermes pairing approve telegram <code>`
+4. **User approval**: Your first message to the bot generates a pairing code
+   (`<PAIRING_CODE>`) → approve it via `hermes pairing approve telegram <code>`
 5. **Allowed users**: Set `TELEGRAM_ALLOWED_USERS=<your_telegram_user_id>` in `.env`
 6. **Channel prompt**: Configured in config.yaml via:
    ```

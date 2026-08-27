@@ -15,7 +15,7 @@ python3 scripts/transcript.py verify
 
 ## Fixing D-12 violations, procedure
 
-1. **Read the flag line and its surrounding context** (2–3 lines above and below) to understand the grammatical function of the `--`.
+1. **Read the flag line and its surrounding context** (2 to 3 lines above and below) to understand the grammatical function of the `--`.
 2. **Choose the correct replacement punctuation** based on context:
    - **Colon (`:`)** - definition, explanation, or elaboration (e.g., "three colors: red, white, blue"; "the surprise: everything that had been done")
    - **Comma (`,`)** - parenthetical aside, trailing break, self-correction, or restatement (e.g., "the machine, in order to learn anything"; "what's a salient, what's a salient idea?")
@@ -35,9 +35,9 @@ python3 scripts/transcript.py verify
 
 ### 1. Duplicate text in code blocks
 
-Transcript files contain a **raw transcript within a fenced code block** (`` ``` `` ... `` ``` ``) AND the same text as regular markdown below it. The code block is **exempt** from D-12 checking, but its text is identical to the non-code version. This means `patch`'s `old_string` will match BOTH locations, the patch often hits the code-block occurrence and leaves the non-code violation untouched.
+Transcript files contain a **raw transcript within a fenced code block** (`` ``` `` ... `` ``` ``) AND the same text as regular markdown below it. The fenced Full Text is NOT exempt from D-12 (D-25): violations must be fixed in both copies. But `patch`'s `old_string` will match BOTH locations, so a patch often hits only one occurrence and leaves the other untouched.
 
-**Workaround:** Always include enough surrounding context lines in `old_string` to uniquely identify the non-code-block occurrence. If the same text exists in both zones, add a unique line from the paragraph above that differs between the two sections.
+**Workaround:** Always include enough surrounding context lines in `old_string` to uniquely identify each occurrence, and fix both. If the same text exists in both zones, add a unique line from the paragraph above that differs between the two sections.
 
 **Diagnostic hint:** If verify still reports the violation after a patch, the patch likely hit the code block copy. Check by re-reading the lines around the flagged line number.
 
@@ -54,9 +54,9 @@ When providing extra context to disambiguate a match, it's easy to accidentally 
 
 Each patch changes the file length (adding/removing characters), so line numbers reported by verify shift. Don't rely on absolute line numbers across patches, re-read the flagged area fresh each time.
 
-### 4. Code-block text is NOT checked but CAN be broken
+### 4. Fenced transcript text IS checked (D-25)
 
-The D-12 checker exempts fenced code blocks, but patching code-block text unnecessarily can introduce inconsistencies between the raw transcript and the formatted version. Only fix violations outside the code blocks.
+For transcript entries, the fenced Full Text block is not exempt from D-12: fix violations inside it too, and keep the raw transcript consistent with the formatted version. The only fence exemption is `--` inside fenced code blocks in `references/` entries, which legitimately quote CLI flags; em dashes stay banned everywhere.
 
 ## Reference: violation counts from NC-0017
 

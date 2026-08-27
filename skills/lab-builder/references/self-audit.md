@@ -2,8 +2,9 @@
 
 Nothing checks lab-builder's output before it reaches disk. This pass is the
 gate. It runs after Phase 3's draft is complete and before the guide
-publishes. Its discipline, inherited from this vault's own
-`technical-research-survey` and `lecture-vetting` skills: when it finds a
+publishes. Its discipline, inherited from the author's
+`technical-research-survey` skill (private vault, not shipped in this repo)
+and this repo's `lecture-vetting` skill: when it finds a
 problem, fix it before write-back, do not flag and proceed.
 
 ## The checks
@@ -12,8 +13,8 @@ problem, fix it before write-back, do not flag and proceed.
 
 Confirm the guide's Phase 2b and Phase 2c fields were filled by direct,
 in-context classification, not by a `delegate_task` call whose result never
-returned. This vault's own testing (2026-07-13) found `delegate_task` never
-blocks in this Hermes instance: a run that dispatched subagents and then
+returned. In some Hermes installs `delegate_task` does not block, so verify
+sub-agent completion before reading results: a run that dispatched subagents and then
 wrote placeholder or invented values while "waiting" for them produced
 silently wrong output. If any Concept Layer Map or Narrative delivery plan
 row looks templated, generic, or unsupported by a specific citation to the
@@ -88,7 +89,7 @@ The self-audit above is judgment. These are mechanical and non-negotiable:
 
 ```bash
 grep -c $'—' <guide-file>          # em dash count (the literal U+2014 character, required in this grep), MUST be 0
-grep -c -- '--' <guide-file>            # double-hyphen count, MUST be 0 once table/rule syntax is excluded
+grep -n -- '--' <guide-file> | grep -vE '\|[-: ]+\||^[0-9]+:---'   # double hyphens outside table separators and rules; review remaining hits: CLI flags and detector lines are exempt, prose uses must be 0
 python3 scripts/transcript.py verify    # if any source_entries were touched, MUST exit 0
 ```
 

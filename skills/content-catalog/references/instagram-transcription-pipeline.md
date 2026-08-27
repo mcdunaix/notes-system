@@ -74,7 +74,7 @@ If already in catalog (dedup), use `--force`:
 python3 scripts/transcript.py add --force "https://www.instagram.com/reel/<shortcode>/"
 ```
 
-The entry file is at `transcripts/<category>/<date>-<slug>.md`. Edit the
+The entry file is at `transcripts/<category>/NC-XXXX_<slug>.md`. Edit the
 frontmatter to add `transcribed: "mlx-whisper (tiny)"` and replace the
 description-only content with the full transcript.
 
@@ -87,4 +87,5 @@ description-only content with the full transcript.
   repeated calls. Wait 30-60 seconds between downloads.
 - **model download for mlx-whisper**: Only `mlx-community/whisper-tiny` works
   without HF token auth. Larger models (`small`, `medium`) return 401 from
-  Hugging Face for the MLX format repos.
+  Hugging Face for the MLX format repos. mlx-whisper runs on Apple Silicon
+  only; on other hardware use `openai-whisper` or `faster-whisper`.

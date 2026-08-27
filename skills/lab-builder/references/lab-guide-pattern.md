@@ -1,9 +1,9 @@
 # Lab Guide Pattern: The Accessible Shape
 
 This is `lab-builder` Phase 3's one output shape (per the brief's Design
-decision 1), migrated and adapted from `lecture-walkthrough`'s own
-`references/lab-guide-pattern.md`, where it was first discovered while
-building the Reticulum ladder's L0 guide. It repurposes the lecture-walkthrough
+decision 1). It originated in the `lecture-walkthrough` skill, where it was
+first discovered while building the Reticulum ladder's L0 guide, and now
+lives only here. It repurposes the lecture-walkthrough
 structure template (Hook, Core Idea, Toolbox, Architecture, Results, Punchline)
 as a skeleton for hands-on lab guides, for audiences who learn by building.
 
@@ -55,7 +55,9 @@ their own narrative section.
   copies the output and trusts the box. This is not dumbing down, it is scope
   control. The box can be opened in a later, more advanced guide.
 
-  **Worked example, from `L0-own-your-network.md`:** the Identity encapsulates
+  **Worked example, from `L0-own-your-network.md`** (this and the other lab
+  guides cited in this file are artifacts in the author's private vault, not
+  shipped in this repo): the Identity encapsulates
   key generation, hashing, signing, and encryption. The student sees only the
   32-character hash and the label "a black box on your machine that says 'I
   am this machine and I can prove it.'" No reference to specific cryptographic
@@ -123,8 +125,8 @@ design lab), combining the lecture-walkthrough structure template, plain-
 language principles, and Gen Z science communication research. The hardware
 lab rules were derived from the EE design pipeline characterize, model, mock,
 measure, iterate, concretized through the speaker Thiele-Small parameter
-measurement lab. Migrated from `lecture-walkthrough/references/lab-guide-pattern.md`
-into this skill per the lab-builder brief's Suggested SKILL.md scaffold; the
+measurement lab. Originally written for the `lecture-walkthrough` skill and
+moved into this skill per the lab-builder brief's Suggested SKILL.md scaffold; the
 collapsible-inline-compliance technique this file's section mapping now
 assumes was proven after this pattern's original write, see
 `eight-block-contract.md`.

@@ -9,10 +9,6 @@
 - **Writes escape their formats:** YAML strings (quotes/backslashes) and `|` in Index.md table cells. Filenames are ID-keyed, `transcripts/<category>/<NC-id>_<slug>.md` (D-9, 2026-07-08; the old `<date>_<slug>` names are gone), so a filename collision means a reissued ID and the add aborts. The slug comes from `add --topics "..."` (D-13, 2026-07-10; the phrase is also stored as `topics:` frontmatter); omitted, it falls back to the source title with a printed nudge. Always pass `--topics`. New entries always write `## Full Text`.
 - **Files are never renamed by the script**, and recategorizing an already-linked entry means editing frontmatter, not moving the file (domain indexes wikilink by path). Moving a *fresh* entry immediately after `add`, before any links exist, is fine (step 3 of the skill), provided frontmatter `categories[0]` and `domain` are updated to match.
 
-## Script location
-
-`scripts/transcript.py` relative to notes root `$CATALOG_ROOT/`, **not** `_scripts/transcript.py` (old path; that directory does not exist).
-
 ## Rebuild command
 
 ```bash

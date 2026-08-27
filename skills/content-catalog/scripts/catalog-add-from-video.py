@@ -38,7 +38,8 @@ NEXT_ID_PY = ROOT / "scripts" / "next-id.py"
 CATALOG_PREFIX = "NC"
 
 # ── Category map ───────────────────────────────────────────────────────
-# Mirror of transcript.py's EMOJI_MAP; keep in sync (D-17 fixed vocabulary).
+# Hand-synced mirror of scripts/transcript.py EMOJI_MAP; keep in sync with
+# that exact dict (D-17 fixed vocabulary).
 CATEGORIES = {
     "ai-ml": "🤖",
     "programming": "💻",
@@ -168,13 +169,13 @@ def create_entry(title: str, text: str, categories: list[str],
     filepath = cat_dir / filename
 
     word_count = len(text.split())
-    dur_str = f"{duration // 60}:{duration % 60:02d}" if duration else ","
+    dur_str = f"{duration // 60}:{duration % 60:02d}" if duration else "-"
 
     lines = [
         "---",
         f'id: "{entry_id}"',
         f'title: "{title}"',
-        f'source_type: "telegram"',
+        f'source_type: "{source.lower()}"',
         f'date_added: "{today}"',
         f'duration_sec: {duration}',
         f'channel: "{source}"',
