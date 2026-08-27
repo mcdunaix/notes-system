@@ -2,32 +2,36 @@
 
 [![CI](https://github.com/mcdunaix/notes-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mcdunaix/notes-system/actions/workflows/ci.yml)
 
-A personal knowledge catalog with a pipeline, not a vault full of someone
-else's notes. This repo ships the **tooling and the protocol** for a
-transcript and research catalog with persistent NC-XXXX IDs: an ingestion
-script, a storage protocol with an automated integrity audit, hand-curated
-Obsidian-native navigation, and the agent skills that expand raw material
-into structured notes.
+Turn links into a library. You paste a YouTube link (or a PDF path, or an
+Instagram/TikTok URL) and one command fetches the full transcript or text,
+saves it as a Markdown note with a permanent ID, files it into a category
+folder, and updates an index page. Over time that leaves you a searchable,
+organized library of everything you have watched and read, instead of a
+browser history.
 
-In practice: you paste a YouTube link (or a PDF path, or an Instagram/
-TikTok URL), and the tool saves the full text as a Markdown note with a
-permanent ID, sorts it into a category, and keeps an index page current.
-Agent skills then turn those raw notes into study material: structured
-walkthroughs of lectures, reviews of tools and hardware, hands-on lab
-guides, and fact-checks. If you learn from videos and want those hours to
-leave a searchable, growing library behind, that is the job this does.
+Three parts ship in this repo:
 
-**The database ships empty and folder-less.** No personal notes are included
-and no content folders are committed. Clone it, open it in Obsidian, and the
-catalog starts from zero. The first `add` creates `transcripts/<category>/`;
-`rebuild` creates `000-dashboard/Index.md`. This is the point: the value is
-in the pipeline, the protocol, and the skills, not in the archive.
+1. **A pipeline** (`scripts/transcript.py`): fetch, categorize, file,
+   index, and audit notes from the command line. Plain Python, no
+   framework.
+2. **A storage protocol** (`docs/STORAGE_PROTOCOL.md`): the rules that
+   keep the library consistent as it grows, enforced by an automated
+   `verify` command.
+3. **Agent skills** (`skills/`): instruction files an AI agent (Hermes
+   Agent, Claude Code, or similar) follows to turn raw transcripts into
+   study material: structured lecture walkthroughs, hardware and tool
+   reviews, hands-on lab guides, and fact-checks.
 
-This repo was factored out of the author's personal vault
-(`~/Documents/notes`), which remains private. The skills and scripts are
-kept here in a cleaned, path-parameterized form; the protocol decisions
-cited throughout (D-8, D-12, D-13, D-17, ...) are documented in
-`docs/STORAGE_PROTOCOL.md`.
+**The library ships empty.** No notes and no content folders are
+committed. Clone it and the catalog starts from zero: your first `add`
+creates the first category folder, `rebuild` creates the index. The value
+is the tooling, not an archive of someone else's notes.
+
+You do not need an AI agent to use the pipeline. The pipeline and the
+`verify` audit run from a bare terminal. The skills are what an agent
+uses on top, and any note-taking app that reads Markdown works;
+[Obsidian](https://obsidian.md) is the best fit because the navigation
+uses wikilinks.
 
 ## Layout
 
@@ -35,24 +39,25 @@ cited throughout (D-8, D-12, D-13, D-17, ...) are documented in
 notes-system/
 ├── scripts/
 │   ├── transcript.py       ingest + rebuild + list + verify (the pipeline)
-│   ├── next-id.py          NC-XXXX allocator scanning transcripts/ AND references/
-│   └── test_*.py           protocol test vectors (R-15)
+│   ├── next-id.py          NC-XXXX id allocator (scans transcripts/ AND references/)
+│   ├── test_*.py           test vectors for the protocol rules
+│   └── install-skills.sh   install skills/ into Hermes Agent
 ├── skills/                 agent skills that expand catalog entries
 │   ├── content-catalog/         maintain the catalog, run the CLI
 │   ├── lecture-walkthrough/     expand a lecture transcript into a structured walkthrough
 │   ├── review-discussion-probe/ three modes: Review, Discussion, Probe
-│   ├── lab-builder/             build hands-on lab guides from research
+│   ├── lab-builder/             build hands-on lab guides
 │   └── lecture-vetting/         fact-check a walkthrough's claims
 ├── docs/
-│   ├── STORAGE_PROTOCOL.md      the invariants, conventions, and vocabulary
-│   └── INGESTION_PIPELINE.md    the ingest-to-file routine map
+│   ├── STORAGE_PROTOCOL.md      the storage rules and vocabulary
+│   └── INGESTION_PIPELINE.md    how a link becomes a filed note
 └── requirements.txt             fetch dependencies (`add` only; the rest is stdlib)
 ```
 
-No content folders ship. During use the catalog grows:
-`add` creates `transcripts/<category>/`, `rebuild` creates
-`000-dashboard/Index.md`, and the agent maintains the hand-curated domain
-and category `00-Index.md` files (see `docs/STORAGE_PROTOCOL.md`).
+Content folders appear during use: `add` creates
+`transcripts/<category>/`, `rebuild` creates `000-dashboard/Index.md`,
+and reference notes, labs, and hand-curated index pages grow alongside
+them (all defined in `docs/STORAGE_PROTOCOL.md`).
 
 ## Prerequisites
 
@@ -63,9 +68,9 @@ and category `00-Index.md` files (see `docs/STORAGE_PROTOCOL.md`).
 - **Optional: [Obsidian](https://obsidian.md)**, a free note-taking app.
   The catalog is plain Markdown, so any editor works, but the wikilink
   navigation is built for Obsidian.
-- **Optional: Hermes Agent** (or Claude Code, or any agent that reads a
-  directory's `CLAUDE.md`). The pipeline works from a bare terminal; an
-  agent is what runs the skills for you.
+- **Optional: an AI agent** (Hermes Agent, Claude Code, or any agent that
+  reads a directory's `CLAUDE.md`). The pipeline works from a bare
+  terminal; an agent is what runs the skills for you.
 
 ## Quick start
 
@@ -79,19 +84,18 @@ export CATALOG_ROOT="$(pwd)"
 # 3. Install the fetch dependencies (needed by `add` only).
 python3 -m pip install -r requirements.txt
 
-# 4. Sanity-check the empty database (stdlib only).
+# 4. Sanity-check the empty catalog (stdlib only).
 python3 scripts/transcript.py verify
 python3 scripts/transcript.py rebuild
 python3 scripts/next-id.py            # prints NC-0001
 
-# 5. Open the folder in Obsidian. Once entries exist and you have run
-#    `rebuild`, 000-dashboard/Index.md is the landing page.
-
-# 6. Install the skills into Hermes (or copy them yourself).
-./scripts/install-skills.sh           # symlinks skills/ into ~/.hermes/skills/productivity/
-
-# 7. Add your first piece of content.
+# 5. Add your first piece of content.
 python3 scripts/transcript.py add "https://youtube.com/watch?v=..." --topics "topic phrase"
+
+# 6. Open the folder in Obsidian. 000-dashboard/Index.md is the landing page.
+
+# 7. Optional: install the skills into Hermes Agent.
+./scripts/install-skills.sh           # symlinks skills/ into ~/.hermes/skills/productivity/
 ```
 
 ## Your first entry, what actually happens
@@ -116,7 +120,59 @@ raw transcript in a fenced block), and regenerated the dashboard. The
 judgment calls (is the category right, what should the note become) are
 yours, or your agent's: that is what the skills are for.
 
+Two flags matter on every `add`:
+
+- `--topics "..."` names the file. The filename slug comes from your
+  topic phrase, not the video's title, so
+  `NC-0001_neural-network-basics.md` stays findable even when the source
+  title is clickbait.
+- `--series "..."` clusters multi-part sources. Give every part of a
+  lecture series or course the same series name and three things are
+  guaranteed: all parts file into the same category folder (later parts
+  inherit the first part's category instead of trusting their own
+  keyword guess), the dashboard lists the parts together as one block,
+  and `verify` fails loudly if a series ever ends up split across
+  folders. Without it, part 3 of a series can keyword-drift into a
+  different folder than parts 1 and 2.
+
+```bash
+python3 scripts/transcript.py add "https://youtube.com/watch?v=<chapter-2>" \
+    --topics "gradient descent" --series "3b1b deep learning"
+```
+
+## How the library organizes itself
+
+Every note is a Markdown file with YAML frontmatter, filed as
+`transcripts/<category>/NC-XXXX_<topic-slug>.md`:
+
+- **IDs are permanent.** `NC-0042` never changes and is never reused,
+  so any other note can cite it forever. `scripts/next-id.py` allocates
+  the next free number.
+- **Categories are a fixed list** (ai-ml, programming, networking,
+  science, culture, and so on), grouped into domains (engineering,
+  culture-society). `add` guesses by keyword scoring; you or your agent
+  correct it when the guess is wrong.
+- **Series cluster.** Multi-part sources tagged with `--series` stay in
+  one folder and list together on the dashboard.
+- **Files are the truth.** The dashboard index is generated FROM the
+  files by `rebuild`, never the other way around. Edit or delete notes
+  freely, then rebuild.
+- **`verify` audits everything**: missing or duplicate IDs, notes filed
+  in the wrong folder, broken transcript blocks, split series, and
+  banned punctuation. It exits non-zero on any violation, so it works
+  as a git hook or CI gate too.
+
+The full rule set, including the file format and the navigation
+structure, is `docs/STORAGE_PROTOCOL.md`. Rules there carry stable codes
+(D-12, D-13, R-15, ...) so notes, skills, and commit messages can cite a
+rule by ID instead of restating it; the codes are defined in that
+document.
+
 ## The skills
+
+Skills are Markdown instruction files (`SKILL.md`) that tell an AI agent
+exactly how to do a job with this catalog. Point any capable agent at
+one, or install them into Hermes Agent so they load on demand.
 
 | Skill | Job |
 |---|---|
@@ -127,52 +183,30 @@ yours, or your agent's: that is what the skills are for.
 | `lecture-vetting` | Fact-check the narrative-load-bearing claims of a cataloged walkthrough. |
 
 Skills use `$CATALOG_ROOT` for every path (see each skill's Catalog root
-note); nothing hardcodes the author's machine.
+note); nothing hardcodes any particular machine.
 
-## Built for Hermes Agent
+## Using it with an agent
 
 Hermes Agent is an agent harness: it runs an AI agent on your machine,
 auto-loads per-directory instructions, and executes packaged skills
-(`SKILL.md` files) on demand. This repo is shaped for it, and works with
-any agent that reads `CLAUDE.md` or `AGENTS.md` in the directory it
-operates in (Claude Code included):
+(`SKILL.md` files) on demand. This repo is shaped for it, and
+works the same with Claude Code or any agent that reads a `CLAUDE.md` or
+`AGENTS.md` file in its working directory:
 
-- **Session on-ramp.** A Hermes session started in this repo auto-loads
-  `CLAUDE.md` (orientation, conventions, commands) and can resume from
-  `SESSION_STATE.md` "Resume here", the same convention the author's vault
-  uses.
-- **Skills.** All five skills are Hermes-format skills (SKILL.md with YAML
-  frontmatter), installed with `./scripts/install-skills.sh` into
-  `~/.hermes/skills/productivity/` (symlink by default, `--copy` for a
-  hermetic install). They load on demand or with `hermes -s <skill>`.
-- **Agent-agnostic core.** The pipeline itself (`transcript.py`,
-  `next-id.py`) is deliberately plain stdlib Python with no Hermes
-  dependency, so any agent or a bare terminal can drive it. Hermes is the
-  layer that reads the skills and runs the capture path.
-- **Capture path.** The author's setup captures links and video via the
-  Hermes gateway (Telegram bot, `catalog-add-from-video.py` with
-  mlx-whisper); `content-catalog` documents that pipeline for the same
-  setup. It is optional, not required.
-
-## Protocol in one breath
-
-- Files are truth. `Index.md` and `list` are derived views, regenerable with
-  `rebuild`.
-- Every entry gets a permanent, unique `NC-XXXX` id. Allocate with
-  `scripts/next-id.py`, never by hand.
-- The filename slug names the topic, never the source title (D-13).
-- No em dashes, ever (D-12): a comma, a colon, or two sentences.
-- `transcripts/<category>/` holds transcript entries (they carry the raw
-  text under `## Full Text`); `references/` holds research and artifact
-  notes with the same NC numbering.
-- `verify` audits storage invariants across both `transcripts/` and
-  `references/` after any external edit. Run it.
-- Domain and category indexes are hand-curated and are the primary Obsidian
-  navigation; `rebuild` only regenerates the dashboard.
-
-Full detail: `docs/STORAGE_PROTOCOL.md`, including a vocabulary section
-that defines the shorthand the skills use (NC id, entry, walkthrough,
-D-#, R-15, vault, gateway).
+- **Orientation is automatic.** An agent session started in this repo
+  loads `CLAUDE.md` (conventions and commands) and resumes from
+  `SESSION_STATE.md`.
+- **Skills install once.** `./scripts/install-skills.sh` symlinks all
+  five skills into `~/.hermes/skills/productivity/` (`--copy` for a
+  hermetic install).
+- **The core stays agent-agnostic.** `transcript.py` and `next-id.py`
+  are plain stdlib Python with no agent dependency, so a bare terminal
+  drives them fine.
+- **Mobile capture is possible but optional.** The `content-catalog`
+  skill documents a capture path where a personal Telegram bot feeds
+  links and videos from your phone into the pipeline via the Hermes
+  gateway, with local speech-to-text for videos without captions. It
+  requires creating your own bot; nothing else depends on it.
 
 ## Troubleshooting
 
@@ -192,10 +226,10 @@ D-#, R-15, vault, gateway).
 - **`rebuild` says "No transcripts found."**: normal on an empty catalog.
   The dashboard appears after your first `add`.
 - **`verify` fails after you edited an entry by hand**: the output names
-  the file and the broken invariant (lost `id:` line, category/folder
-  mismatch, broken `## Full Text` fence, or a banned dash). Fix the named
-  line and rerun until it exits 0.
+  the file and the broken rule (lost `id:` line, category/folder
+  mismatch, broken `## Full Text` fence, a split series, or a banned
+  dash). Fix the named line and rerun until it exits 0.
 
 ## License
 
-MIT. See LICENSE for the full text. The scripts and skills are original work.
+MIT. See LICENSE for the full text.

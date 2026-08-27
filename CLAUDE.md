@@ -36,6 +36,10 @@ Read `SESSION_STATE.md` "Resume here" (newest entry first).
   `scripts/next-id.py`, never by hand.
 - **The slug names the topic, not the title (D-13).** Always pass
   `--topics "..."` to `add`.
+- **A multi-part source always gets `--series "..."`, same name every
+  part.** The series decides the folder (later parts inherit the first
+  part's category), the dashboard clusters the parts, and `verify` fails
+  on a series split across folders. See STORAGE_PROTOCOL "Series".
 - **`verify` must exit 0** after any external edit to a transcript or
   reference entry. It scans both `transcripts/` and `references/`; the
   one reference-only exemption is `--` inside fenced code blocks (CLI
@@ -57,6 +61,7 @@ export CATALOG_ROOT="$(pwd)"                       # skills use this for every p
 python3 -m pip install -r requirements.txt         # fetch deps, needed by `add` only
 python3 scripts/transcript.py add <url> --topics "topic phrase"   # YouTube/Instagram/TikTok
 python3 scripts/transcript.py add --pdf <path> --topics "..."     # PDF
+python3 scripts/transcript.py add <url> --topics "..." --series "series name"  # part of a series
 python3 scripts/transcript.py list                 # list entries
 python3 scripts/transcript.py rebuild              # regenerate dashboard
 python3 scripts/transcript.py verify               # audit storage invariants

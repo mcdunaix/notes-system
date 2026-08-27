@@ -36,6 +36,10 @@ python3 scripts/transcript.py add "https://instagram.com/reel/..." --topics "top
 # PDF
 python3 scripts/transcript.py add --pdf "path/to/document.pdf" --topics "topic phrase"
 
+# One part of a multi-part source (lecture series, course)
+python3 scripts/transcript.py add "https://youtube.com/watch?v=..." \
+    --topics "topic phrase" --series "series name"
+
 # List / rebuild
 python3 scripts/transcript.py list
 python3 scripts/transcript.py rebuild
@@ -43,6 +47,13 @@ python3 scripts/transcript.py rebuild
 
 Always pass `--topics "..."`: the filename slug names the topic, not the
 title (D-13).
+
+When the source is one part of a series, always pass the same
+`--series "..."` name for every part. The series decides the folder
+(later parts inherit the first part's category, whatever their own
+keyword guess says), the dashboard lists the parts contiguously, and
+`verify` fails if a series ever splits across category folders. Without
+the flag, per-video keyword drift can scatter a series.
 
 ## Telegram video → catalog pipeline
 

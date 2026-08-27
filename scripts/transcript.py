@@ -30,8 +30,8 @@ Storage protocol (invariants this file maintains):
       and fitz import lazily inside the fetch paths that need them.
 
 Commands:
-  add <url> [--topics "..."] - YouTube / Instagram / TikTok (auto-detected)
-  add --pdf <path> [--topics "..."] - Extract text from PDF
+  add <url> [--topics "..."] [--series "..."] - YouTube / Instagram / TikTok
+  add --pdf <path> [--topics "..."] [--series "..."] - Extract text from PDF
   rebuild - Rebuild 000-dashboard/Index.md from entries
   list - List all catalog entries
   verify - Audit storage invariants (exit 1 on violation)
@@ -481,6 +481,44 @@ def slugify(text: str, max_len: int = 60) -> str:
     return text.rstrip("-")
 
 
+# ── Series clustering ──────────────────────────────────────────────────────
+# A multi-part source (a lecture series, a course) is tagged with --series.
+# The series decides the folder: the first entry files wherever the keyword
+# guess puts it, every later entry follows the series, never the per-video
+# guess. Episode-to-episode vocabulary drift is exactly how earlier versions
+# of this system scattered a series across category folders.
+
+def series_category(entries: list[dict], series: str) -> str | None:
+    """The primary category the series already lives in, or None if unseen."""
+    for e in entries:
+        fm = e["fm"]
+        if fm and str(fm.get("series", "")) == series:
+            cats = fm.get("categories", [])
+            if isinstance(cats, list) and cats:
+                return cats[0]
+    return None
+
+
+def resolve_categories(guessed: list[str], series_cat: str | None) -> list[str]:
+    """Force the series' folder into the primary slot, keep guessed
+    secondaries, capped at two like guess_category."""
+    if not series_cat or guessed[0] == series_cat:
+        return guessed
+    return [series_cat] + [c for c in guessed if c != series_cat][:2]
+
+
+def series_conflicts(entries: list[dict]) -> dict[str, list[str]]:
+    """{series: sorted categories} for every series split across folders."""
+    cats_by_series: dict[str, set[str]] = {}
+    for e in entries:
+        fm = e["fm"]
+        if fm and fm.get("series"):
+            cats = fm.get("categories", [])
+            primary = cats[0] if isinstance(cats, list) and cats else str(cats)
+            cats_by_series.setdefault(str(fm["series"]), set()).add(primary)
+    return {s: sorted(c) for s, c in cats_by_series.items() if len(c) > 1}
+
+
 # ── Save (I5: escape on write; I6: never overwrite) ────────────────────────
 
 def yaml_str(value) -> str:
@@ -493,6 +531,8 @@ def save_entry(entry_data: dict) -> Path:
     Save a catalog entry as markdown with YAML frontmatter.
     Required keys: id, title, source_type, text, categories
     Optional: topics (names the filename slug, D-13; title is the fallback)
+    Optional: series (multi-part sources cluster; verify keeps a series
+        in one category folder)
     Optional (video/social): url, video_id, channel, duration
     Optional (pdf): file_path, pdf_pages, author
     """
@@ -545,6 +585,8 @@ def save_entry(entry_data: dict) -> Path:
     lines.append(f"categories: [{', '.join(yaml_str(c) for c in categories)}]")
     if entry_data.get("topics"):
         lines.append(f"topics: {yaml_str(entry_data['topics'])}")
+    if entry_data.get("series"):
+        lines.append(f"series: {yaml_str(entry_data['series'])}")
     lines.append(f"word_count: {word_count}")
     lines.append("---")
     lines.append("")
@@ -561,6 +603,8 @@ def save_entry(entry_data: dict) -> Path:
         dur = entry_data.get("duration", 0)
         if dur or src_type == "youtube":
             lines.append(f"**Duration:** {format_duration(dur)}  ")
+    if entry_data.get("series"):
+        lines.append(f"**Series:** {entry_data['series']}  ")
     lines.append(f"**Added:** {today}  ")
     lines.append(f"**Categories:** {', '.join(categories)}")
     lines.append("")
@@ -599,6 +643,23 @@ def md_cell(value: str) -> str:
 def domain_for(category: str) -> str:
     """A category's Domain (D-17 tier 1); unmapped categories get their own bucket."""
     return CATEGORY_DOMAIN.get(category, "uncategorized")
+
+
+def cluster_rows(cat_rows: list[dict]) -> list[dict]:
+    """Sort a category's rows so series members sit contiguously.
+
+    Each series block is anchored at its lowest member id; standalone rows
+    keep plain id order. Within a block, members stay in id order.
+    """
+    anchor: dict[str, str] = {}
+    for r in cat_rows:
+        s = r.get("series", "")
+        if s:
+            rid = str(r["id"])
+            anchor[s] = min(anchor.get(s, rid), rid)
+    return sorted(cat_rows,
+                  key=lambda r: (anchor.get(r.get("series", ""), str(r["id"])),
+                                 str(r["id"])))
 
 
 def group_by_domain(rows: list[dict]) -> dict[str, dict[str, list]]:
@@ -646,6 +707,7 @@ def build_index(entries: list[dict] | None = None):
             "duration": duration,
             "channel": fm.get("channel", ""),
             "source_type": src_type,
+            "series": str(fm.get("series", "") or ""),
         })
 
     grouped = group_by_domain(rows)
@@ -668,13 +730,20 @@ def build_index(entries: list[dict] | None = None):
             cat_rows = cats[cat]
             emoji = EMOJI_MAP.get(cat, "📄")
             lines.append(f"\n### {emoji} {cat.capitalize()} ({len(cat_rows)})\n")
-            lines.append("| ID | Date | Title | Type | Duration | Source |")
-            lines.append("|----|------|-------|------|----------|--------|")
-            for r in sorted(cat_rows, key=lambda x: x["id"]):
+            has_series = any(r.get("series") for r in cat_rows)
+            if has_series:
+                lines.append("| ID | Date | Title | Series | Type | Duration | Source |")
+                lines.append("|----|------|-------|--------|------|----------|--------|")
+            else:
+                lines.append("| ID | Date | Title | Type | Duration | Source |")
+                lines.append("|----|------|-------|------|----------|--------|")
+            for r in cluster_rows(cat_rows):
                 title = md_cell(r["title"])
                 title_link = f"[{title}]({r['url']})" if r["url"] else title
+                series_col = (f"| {md_cell(r.get('series', '')) or '-'} "
+                              if has_series else "")
                 lines.append(
-                    f"| {r['id']} | {r['date']} | {title_link} | {r['type']} "
+                    f"| {r['id']} | {r['date']} | {title_link} {series_col}| {r['type']} "
                     f"| {format_duration(r['duration'])} | {md_cell(r['channel']) or '-'} |"
                 )
 
@@ -805,6 +874,10 @@ def cmd_verify() -> int:
 
         problems.extend(_find_dash_violations(body, rpath))
 
+    for s, cats in series_conflicts(entries).items():
+        problems.append(f"series '{s}' split across category folders: "
+                        f"{', '.join(cats)} (a series clusters in one folder)")
+
     ref_count = 0
     if REFERENCES_DIR.exists():
         for path in sorted(REFERENCES_DIR.rglob("*.md")):
@@ -839,7 +912,21 @@ def cmd_verify() -> int:
 
 # ── CLI commands ───────────────────────────────────────────────────────────
 
-def cmd_add_youtube(url: str, force: bool = False, topics: str | None = None):
+def apply_series(entries: list[dict], guessed: list[str],
+                 series: str | None) -> list[str]:
+    """Cluster with the series' existing folder, announcing an override."""
+    if not series:
+        return guessed
+    known = series_category(entries, series)
+    resolved = resolve_categories(guessed, known)
+    if resolved[0] != guessed[0]:
+        print(f"  Series '{series}' already lives in {resolved[0]}, "
+              f"filing there (guess was {guessed[0]})")
+    return resolved
+
+
+def cmd_add_youtube(url: str, force: bool = False, topics: str | None = None,
+                    series: str | None = None):
     """Fetch a YouTube transcript, categorize, save, update index, one scan."""
     video_id = extract_video_id(url)
     if not video_id:
@@ -868,7 +955,7 @@ def cmd_add_youtube(url: str, force: bool = False, topics: str | None = None):
         print(f"ERROR: Transcript not available: {e}")
         sys.exit(1)
 
-    categories = guess_category(text, title)
+    categories = apply_series(entries, guess_category(text, title), series)
     print(f"  Categories: {', '.join(categories)}")
     cat_id = next_catalog_id(entries)
     print(f"  ID: {cat_id}")
@@ -884,13 +971,14 @@ def cmd_add_youtube(url: str, force: bool = False, topics: str | None = None):
         "text": text,
         "categories": categories,
         "topics": topics,
+        "series": series,
     })
     print(f"  Saved: {rel(filepath)}")
     finish_add(entries, filepath, cat_id)
 
 
 def cmd_add_social(url: str, source_type: str = "instagram",
-                   topics: str | None = None):
+                   topics: str | None = None, series: str | None = None):
     """Add a social media post (Instagram/TikTok), metadata + description only."""
     entries = scan_catalog()
     dup = find_duplicate(entries, ("url", normalize_url(url)))
@@ -911,7 +999,7 @@ def cmd_add_social(url: str, source_type: str = "instagram",
         print("  The platform may require browser cookies for access.")
         return
 
-    categories = guess_category(text, title)
+    categories = apply_series(entries, guess_category(text, title), series)
     print(f"  Categories: {', '.join(categories)}")
     cat_id = next_catalog_id(entries)
     print(f"  ID: {cat_id}")
@@ -926,12 +1014,14 @@ def cmd_add_social(url: str, source_type: str = "instagram",
         "text": text,
         "categories": categories,
         "topics": topics,
+        "series": series,
     })
     print(f"  Saved: {rel(filepath)}")
     finish_add(entries, filepath, cat_id)
 
 
-def cmd_add_pdf(pdf_path: str, topics: str | None = None):
+def cmd_add_pdf(pdf_path: str, topics: str | None = None,
+                series: str | None = None):
     """Extract text from a PDF, categorize, save, update index, one scan."""
     pdf_file = Path(pdf_path)
     if not pdf_file.exists():
@@ -955,7 +1045,7 @@ def cmd_add_pdf(pdf_path: str, topics: str | None = None):
     if first_line and len(first_line) < 200:
         title = first_line.strip(".# \t")
 
-    categories = guess_category(text, title)
+    categories = apply_series(entries, guess_category(text, title), series)
     print(f"  Categories: {', '.join(categories)}")
     cat_id = next_catalog_id(entries)
     print(f"  ID: {cat_id}")
@@ -970,6 +1060,7 @@ def cmd_add_pdf(pdf_path: str, topics: str | None = None):
         "text": text,
         "categories": categories,
         "topics": topics,
+        "series": series,
     })
     print(f"  Saved: {rel(filepath)}")
     finish_add(entries, filepath, cat_id)
@@ -1016,6 +1107,10 @@ def main():
                         help='Topic(s) for the filename slug (D-13), e.g. '
                              '"reticulum, off-grid mesh networking"; '
                              'defaults to the source title')
+    parser.add_argument("--series", metavar='"NAME"',
+                        help='Series this entry belongs to, e.g. "3b1b deep '
+                             'learning"; later parts file into the same '
+                             'category folder and cluster in the dashboard')
     parser.add_argument("--force", action="store_true",
                         help="Add even if the source already exists (YouTube only)")
     parser.add_argument("url", nargs="?", help="YouTube/Instagram/TikTok URL")
@@ -1028,13 +1123,15 @@ def main():
 
     if args.command == "add":
         if args.pdf:
-            cmd_add_pdf(args.pdf, topics=args.topics)
+            cmd_add_pdf(args.pdf, topics=args.topics, series=args.series)
         elif args.url:
             src_type = detect_source_type(args.url)
             if src_type == "youtube":
-                cmd_add_youtube(args.url, force=args.force, topics=args.topics)
+                cmd_add_youtube(args.url, force=args.force, topics=args.topics,
+                                series=args.series)
             elif src_type in ("instagram", "tiktok"):
-                cmd_add_social(args.url, source_type=src_type, topics=args.topics)
+                cmd_add_social(args.url, source_type=src_type,
+                               topics=args.topics, series=args.series)
             else:
                 print(f"Unknown source type for URL: {args.url}")
                 print("  Supported: YouTube, Instagram, TikTok")

@@ -111,6 +111,26 @@ cross-check.
   `scripts/test_*.py` files are the standing vectors; run them after any
   change to categorization or indexing.
 
+### Series (multi-part sources)
+
+A lecture series, a course, or any multi-part source is tagged at add
+time with `--series "..."`. The name round-trips as a `series:`
+frontmatter field and three guarantees follow:
+
+- **One folder per series.** The first entry files where the keyword
+  guess puts it; every later `add` with the same series name inherits
+  that category folder, overriding its own per-video guess.
+  Episode-to-episode vocabulary drift is how earlier versions of this
+  system scattered a series across folders.
+- **The dashboard clusters.** Within a category table, series members
+  list contiguously, anchored at the series' lowest NC id, with a Series
+  column naming the group. Standalone entries keep plain id order.
+- **`verify` enforces it.** A series whose members sit in more than one
+  category folder is an invariant violation (exit 1), the same class as
+  category/folder drift.
+
+Pinned by the R-15 vectors in `scripts/test_series_clustering.py`.
+
 ## Categories and domains
 
 The fixed vocabulary in `CATEGORY_RULES` (primary category determines the
@@ -149,8 +169,12 @@ date_added: "2026-06-24"
 duration_sec: 1120
 categories: ["ai-ml"]
 topics: "neural network structure, MNIST"
+series: "3b1b deep learning"
 word_count: 3357
 ```
+
+`topics:` and `series:` are optional; `series` marks a multi-part source
+(see Series above).
 
 Reference entry frontmatter adds a `kind:` field (`review`, `discussion`,
 `probe`) and a `source_type` naming the artifact type (`hardware`, `model`,
