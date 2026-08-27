@@ -7,9 +7,11 @@ script, a storage protocol with an automated integrity audit, hand-curated
 Obsidian-native navigation, and the agent skills that expand raw material
 into structured notes.
 
-**The database is empty.** No personal notes are included. Clone it, open it
-in Obsidian, and the catalog starts from zero. This is the point: the value
-is in the pipeline, the protocol, and the skills, not in the archive.
+**The database ships empty and folder-less.** No personal notes are included
+and no content folders are committed. Clone it, open it in Obsidian, and the
+catalog starts from zero. The first `add` creates `transcripts/<category>/`;
+`rebuild` creates `000-dashboard/Index.md`. This is the point: the value is
+in the pipeline, the protocol, and the skills, not in the archive.
 
 This repo was factored out of the author's personal vault
 (`~/Documents/notes`), which remains private. The skills and scripts are
@@ -21,13 +23,6 @@ cited throughout (D-8, D-12, D-13, D-17, ...) are documented in
 
 ```
 notes-system/
-├── 000-dashboard/          landing page (Index.md is derived, rebuilt by transcript.py)
-├── 01-engineering/         domain: AI, programming, networking (hand-curated indexes)
-├── 02-culture-society/     domain: talks, interviews, culture (hand-curated indexes)
-├── transcripts/            canonical entry storage (files are truth), empty
-├── references/             non-transcript notes: reviews, probes, discussions, empty
-├── labs/                   hands-on lab ladders, empty
-├── briefs/                 delegation briefs, empty
 ├── scripts/
 │   ├── transcript.py       ingest + rebuild + list + verify (the pipeline)
 │   ├── next-id.py          NC-XXXX allocator scanning transcripts/ AND references/
@@ -35,13 +30,18 @@ notes-system/
 ├── skills/                 agent skills that expand catalog entries
 │   ├── content-catalog/         maintain the catalog, run the CLI
 │   ├── lecture-walkthrough/     expand a lecture transcript into a structured walkthrough
-│   ├── review-discussion-probe/ three modes: Review, Discussion, Probe (new)
+│   ├── review-discussion-probe/ three modes: Review, Discussion, Probe
 │   ├── lab-builder/             build hands-on lab guides from research
 │   └── lecture-vetting/         fact-check a walkthrough's claims
 └── docs/
     ├── STORAGE_PROTOCOL.md      the invariants and conventions
     └── INGESTION_PIPELINE.md    the ingest-to-file routine map
 ```
+
+No content folders ship. During use the catalog grows:
+`add` creates `transcripts/<category>/`, `rebuild` creates
+`000-dashboard/Index.md`, and the agent maintains the hand-curated domain
+and category `00-Index.md` files (see `docs/STORAGE_PROTOCOL.md`).
 
 ## Quick start
 
@@ -57,7 +57,8 @@ python3 scripts/transcript.py verify
 python3 scripts/transcript.py rebuild
 python3 scripts/next-id.py            # prints NC-0001
 
-# 4. Open the folder in Obsidian. 000-dashboard/Index.md is the landing page.
+# 4. Open the folder in Obsidian. Once entries exist and you have run
+#    `rebuild`, 000-dashboard/Index.md is the landing page.
 
 # 5. Install the skills into Hermes (or copy them yourself).
 ./scripts/install-skills.sh           # symlinks skills/ into ~/.hermes/skills/productivity/

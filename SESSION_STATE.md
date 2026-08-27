@@ -15,6 +15,32 @@ root is the catalog root (`$CATALOG_ROOT`); every skill path is parameterized.
 
 ## Resume here
 
+### 2026-08-26 (3rd session): Database now ships folder-less; content folders removed from the public repo
+
+**Session arc.**
+1. User reported the shipped repo looked wrong: "I literally see folders
+   that shouldn't be there." Verified GitHub == local (single branch, no
+   tags): the only content-side files were the 00-Index.md templates (the
+   author's own category prose) and .gitkeep dirs, no entries, no personal
+   notes. User confirmed the whole content side goes: 000-dashboard/,
+   01-engineering/, 02-culture-society/, transcripts/<cats>/, references/,
+   labs/, briefs/ and their index files. Ship only scripts/, skills/,
+   docs/, README, LICENSE.
+2. `git rm -r` the content side. Fixed `transcript.py` build_index to
+   mkdir 000-dashboard/ before writing Index.md: the write previously
+   assumed the shipped dir, and the first `add` on a fresh clone would
+   have crashed. Proved the path with a synthetic entry (rebuild created
+   the dashboard, verify passed on 1 entry), then removed the test files.
+3. Confirmed the pipeline is folder-less-safe: scan_catalog, issued_ids,
+   and next-id.py collect() all guard `exists()`. verify/list/rebuild/
+   next-id all exit 0 with no content dirs present.
+4. Updated README (empty-and-folder-less wording, layout, quick start) and
+   CLAUDE.md (where things live). Skills keep their vault-organization
+   guidance as protocol for a live catalog, not shipped structure.
+
+**Files changed.** scripts/transcript.py (mkdir fix), README.md, CLAUDE.md,
+SESSION_STATE.md. Deleted all content-side folders.
+
 ### 2026-08-26 (2nd session): Shipping audit before GitHub publish; 3 leak classes fixed
 
 **Session arc.**

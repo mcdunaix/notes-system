@@ -1,11 +1,11 @@
 # notes-system: catalog tooling repo (agent on-ramp)
 
 Tooling and protocol for a transcript/research catalog with persistent
-NC-#### IDs. The database ships EMPTY, no personal notes. The repo root is
-the catalog root (`$CATALOG_ROOT`), the directory containing
-`scripts/transcript.py`. This file is the on-ramp a Hermes or Claude Code
-session reads when working in this directory; keep it short, running state
-lives in `SESSION_STATE.md`.
+NC-#### IDs. The database ships EMPTY and FOLDER-LESS (no personal notes, no
+content folders). The repo root is the catalog root (`$CATALOG_ROOT`), the
+directory containing `scripts/transcript.py`. This file is the on-ramp a
+Hermes or Claude Code session reads when working in this directory; keep it
+short, running state lives in `SESSION_STATE.md`.
 
 ## How to resume
 
@@ -20,7 +20,10 @@ Read `SESSION_STATE.md` "Resume here" (newest entry first).
 - `skills/`: Hermes skills (SKILL.md format), five of them
 - `docs/STORAGE_PROTOCOL.md`: invariants I1-I8 + conventions (D-# ids kept as vocabulary)
 - `docs/INGESTION_PIPELINE.md`: the cleaned ingest-to-file routine map
-- `transcripts/`, `references/`, `labs/`, `briefs/`: empty database dirs
+- `transcripts/`, `references/`, `labs/`, `briefs/`: content folders are NOT
+  committed. `add` creates `transcripts/<category>/`; `rebuild` creates
+  `000-dashboard/Index.md`; domain/category `00-Index.md` files and the
+  `references/`, `labs/`, `briefs/` dirs are created by the agent during use.
 
 ## Conventions (the rules agents must not break)
 

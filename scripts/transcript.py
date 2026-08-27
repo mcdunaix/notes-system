@@ -644,6 +644,7 @@ def build_index(entries: list[dict] | None = None):
                     f"| {format_duration(r['duration'])} | {md_cell(r['channel']) or '-'} |"
                 )
 
+    INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
     INDEX_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Index rebuilt at {INDEX_PATH}")
     print(f"  {total} entries ({type_summary}) in {len(grouped)} domains, {total_categories} categories")
