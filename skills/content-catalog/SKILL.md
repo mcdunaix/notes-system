@@ -12,6 +12,26 @@ containing `scripts/transcript.py`; this repo root when the repo is used as
 the vault). Set `export CATALOG_ROOT=/path/to/catalog` before running commands.
 CLI tool: `scripts/transcript.py`
 
+## Navigation contract for live vaults
+
+When `$CATALOG_ROOT/000-dashboard/Notes.base` exists, this contract supersedes
+the legacy manual-index instructions below. `index.md` is Notes home; its
+Newest captures view reads saved files live, ordered by `date_added` then
+ID descending. Category pages with `catalog_category` embed `Category.base`
+and update automatically. Do not append routine captures to the curated
+lists or maintain static category counts. Preserve custom series guides,
+course order, labs, and companion-reference links as curated material.
+
+After the final entry edit, run `python3 scripts/transcript.py rebuild` and
+`python3 scripts/transcript.py verify`, then the scoped content gate. The
+generated `000-dashboard/Index.md` is never hand-edited. Its Note links open
+saved files; Original links open source URLs. Report the new ID, readable
+title, exact vault-relative note path, transcript source, and coverage.
+For Telegram, include an `obsidian://open?vault=notes&file=...` link when
+the registered vault name is known, percent-encoding the file path; also
+include the plain path because the URI depends on Obsidian registration.
+Do not point someone looking for their notes only at the source video.
+
 ## Supported source types
 
 | Type | Flag | What gets extracted |
