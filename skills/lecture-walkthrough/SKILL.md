@@ -13,6 +13,13 @@ Create detailed, structured walkthrough entries for lecture videos in the conten
 (the repo root when this repo is used as the vault). Every path below is
 relative to it. Set it in your shell before running commands: `export CATALOG_ROOT=/path/to/catalog`.
 
+**Interpreter rule.** Run the tools as `python3 scripts/...` and install
+dependencies with `python3 -m pip`, using the same interpreter the pipeline
+already runs on. On a device where an agent framework ships its own virtualenv
+(Android/Termux: system python3 3.14, the Hermes venv 3.13) a package installed
+into the other interpreter is invisible to the catalog, and the failure reads
+as a missing feature rather than a missing dependency.
+
 ## Workflow
 
 ### 1. Choose your pipeline
@@ -127,9 +134,21 @@ python3 scripts/transcript.py add --topics "topic one, topic two" "TIKTOK_URL"
 #   ffmpeg -y -i "/tmp/<slug>_dl" -vn -acodec libmp3lame -q:a 4 "/tmp/<slug>.mp3"
 yt-dlp -x --audio-format mp3 -o "/tmp/<slug>" "TIKTOK_URL"
 
-# Step 4: Transcribe with mlx_whisper (Apple Silicon; on other platforms
-#          use openai-whisper or faster-whisper)
-mlx_whisper /tmp/<slug>.mp3 --output-dir /tmp/
+# Step 4: Acquire the transcript with the acquisition helper, never by hand.
+#          Do NOT use speech_recognition / Google Web Speech: it silently drops
+#          chunks on music-heavy audio and produced every partial entry this
+#          catalog has had to repair. Tiers, first to yield >= 40 words wins:
+#            subs (source caption track) -> whisper-local (whisper.cpp)
+#            -> whisper-mac (mlx_whisper on another host over ssh)
+#          The helper prints TRANSCRIPT_SOURCE / WORDS / DURATION / COVERAGE
+#          and exits 0 (>=80% coverage), 4 (60-80%), 5 (<60%), 3 (nothing).
+catalog-transcribe "TIKTOK_URL" "/tmp/<slug>.txt" <duration_seconds>
+#          It ships in this repo at scripts/catalog-transcribe.sh; a device
+#          installs it on PATH with its own CATALOG_MAC / CATALOG_WCLI /
+#          CATALOG_WMODEL, so the device config stays out of the repo.
+#          Exit 3: do NOT file the entry. Exit 4 or 5: file it, and the reply
+#          MUST state the transcript source and the coverage. A silent partial
+#          transcript is the defect this step exists to prevent.
 
 # Step 5: Read the transcription to identify the talk's structure
 read_file(path="/tmp/<slug>.txt", limit=100)
@@ -186,8 +205,12 @@ rmdir ../uncategorized/ 2>/dev/null
 #
 #          - [[../transcripts/<category>/NC-XXXX_<slug>|Display Title]] - MM:SS
 
-# Step 10: Gate
-python3 scripts/transcript.py verify
+# Step 10: Gate, both mandatory before the entry counts as done
+python3 scripts/transcript.py verify            # ids, fences, folder drift, D-12
+python3 scripts/catalog_gate.py --root . --entry NC-XXXX
+#   Content gate: coverage vs duration, placeholder text, word_count drift,
+#   decoder loops, index reachability. Scope it with --entry, otherwise the
+#   catalog's older fails mask this entry's own result.
 ```
 
 **Key differences from YouTube pipelines:**
@@ -195,7 +218,7 @@ python3 scripts/transcript.py verify
 | Aspect | YouTube (Options A/B) | TikTok / Short-form (Option D) |
 |--------|----------------------|-------------------------------|
 | Subtitles | Native SRT (auto or manual) | None. Must transcribe from audio |
-| Transcription tool | yt-dlp SRT processing | mlx_whisper (or equivalent) |
+| Transcription tool | yt-dlp SRT processing | catalog-transcribe (subs -> whisper.cpp -> mlx_whisper); never speech_recognition |
 | Category metadata | YouTube API tags | Auto-categorized from description/hashtags; may land in `uncategorized/` if no strong keywords |
 | Walkthrough length | Lecture scale (20-90 min) | Short-form scale (1-5 min) |
 | Reference depth | Usually cites papers/textbooks | Cites quoted authors + conceptual context |
@@ -471,7 +494,21 @@ After any edit to a transcript file, run the catalog's integrity audit, it check
 cd $CATALOG_ROOT && python3 scripts/transcript.py verify
 ```
 
-Exit 0 = all invariants hold; on failure it names the file and the broken invariant. To pinpoint fence damage manually:
+Exit 0 = all invariants hold; on failure it names the file and the broken invariant.
+
+`verify` is a STORAGE gate: it passes on a placeholder transcript. Run the
+CONTENT gate as well, scoped to the entry you touched:
+
+```bash
+cd $CATALOG_ROOT && python3 scripts/catalog_gate.py --root . --entry NC-XXXX
+```
+
+It reports coverage against the source duration, placeholder Full Text,
+`word_count` drift against the text actually stored, decoder repetition loops,
+missing co-located media for short-form, and whether the entry is reachable
+from a hand-curated index as well as the dashboard. Scope it with `--entry`:
+this catalog carries older entries with known content fails, and a catalog-wide
+exit code would never be 0 again. To pinpoint fence damage manually:
 
 ```bash
 cd $CATALOG_ROOT/transcripts/<category>/

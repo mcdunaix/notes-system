@@ -40,6 +40,8 @@ notes-system/
 ├── scripts/
 │   ├── transcript.py       ingest + rebuild + list + verify (the pipeline)
 │   ├── next-id.py          NC-XXXX id allocator (scans transcripts/ AND references/)
+│   ├── catalog-transcribe.sh  transcript acquisition: captions, then whisper.cpp,
+│   │                          then a remote mlx_whisper over ssh
 │   ├── test_*.py           test vectors for the protocol rules
 │   └── install-skills.sh   install skills/ into Hermes Agent
 ├── skills/                 agent skills that expand catalog entries
