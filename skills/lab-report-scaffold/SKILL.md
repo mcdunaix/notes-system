@@ -63,6 +63,25 @@ Handle units and axes explicitly in the note: on a 4:3 photo shown full frame on
 long axis only. Pairing screen width with the sensor's short axis is off by 1.33 and
 the report silently wrong.
 
+## Take the instrument's own units
+
+A tape in inches must not be converted by hand: hand conversion adds arithmetic
+error to every read and hides which mark was actually read. Parse units in the note
+instead, so the value typed is the value on the instrument. Support `150`, `150 mm`,
+`150mm`, `5.906 in`, `5 15/16 in`, `5-15/16"`, `15/16 in`, `5 ft 3 in`, `5'3"`,
+`3 cm`; unit-less means millimetres. Two traps: insert a space before the unit word
+(`re.sub(r"(?<=[\d/])\s*(mm|cm|inch(?:es)?|in|ft|feet)\b", r" \1", low)`) or
+`150mm` never splits, and put `inch(?:es)?` before `in` in the alternation or
+`\bin\b` refuses to match it. Strip comments first (`s.split("#")[0]`) since values
+carry trailing `#` notes.
+
+Keep the raw typed strings in the results table next to the converted millimetres
+(`u as read`), so the report shows what the instrument said. And when the instrument
+is coarser than the physics, say so in the note: a 1/16 inch mark is 1.59 mm, which
+is 5 to 8 percent of a 20 to 30 mm reading, so that granularity, not the component
+tolerance, is what the quoted uncertainty is made of. Offer the finer graduation as
+the fix rather than silence.
+
 ## Rendering the PDF
 
 The converter is
