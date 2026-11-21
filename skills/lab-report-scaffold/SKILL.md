@@ -46,6 +46,21 @@ Uncertainty budget shape that works: statistical from the fit standard errors,
 systematic from each input that scales the fitted quantity, combined in quadrature.
 State which inputs are spec (trusted to a percent or two) and which are ruler reads.
 
+## Check the note's own formulas against the target
+
+A check formula can sit in a note for weeks because nobody evaluates it. ECE 5331
+Lab 3 told him to compute `cos(theta) = ((b - a) / 2) / h` and expect 0.707 for a
+45 degree face, where `h` was the vertical rise. Dividing by the rise gives 1.000
+at 45 degrees and 0.707 at 60, so the check inverted the answer. Before trusting
+any formula a note states, plug in the value it is supposed to produce; then name
+the denominator in the prose (here the slant, not the rise).
+
+Read printed dimensions off the artwork, not off the prose table. That same note
+specified a 90 mm base edge while the template image is labelled 5 cm base, 1 cm
+top, 2.8 cm slant, and 90 mm cannot fit inside the 58.4 mm display the note
+otherwise assumes. Vision-read the source page and check the numbers against the
+hardware they have to sit on.
+
 ## Estimator conditioning, the trap that bit
 
 On `1/M = u/f - 1` the two readings are not equal in quality. The slope is well
