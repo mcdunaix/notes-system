@@ -1,6 +1,6 @@
 ---
 name: lab-report-scaffold
-description: "Use when scaffolding a measurement lab report note."
+description: "Use when scaffolding or auditing a lab report note."
 version: 1.0.0
 author: Hermes Agent
 platforms: [macos]
@@ -16,6 +16,23 @@ write the report. Build a fill-in note plus a compute script, so the numbers and
 the plot come out of the measurements mechanically and the prose stays his. First
 used on ECE 5331 Lab 1 (geometrical optics, focal length of a phone camera) in
 `~/Documents/School/ECE5331/Lab 1 - Geometrical Optics/`.
+
+## Pick the governing handout first
+
+Before scaffolding anything, confirm which handout governs his section. Online,
+IVC and RRT sections commonly get their own remote version of the same lab, and it
+is a different experiment rather than a trimmed one (a phone-camera measurement
+where the bench section uses an optical bench and lens kit). Using the in-person
+file silently produces a report against the wrong procedure.
+
+Identify a handout by its body and the report parts it asks for, never by its
+filename. Canvas `display_name`, the module title and even page 1 of the PDF carry
+over from an earlier year, so a stale label is not evidence that the right file is
+missing. Record the file id, byte size and sha256 in the lab folder's `00-Index.md`
+so the next session stops re-litigating it.
+
+A logistics page naming a room and session times is the in-person spec; it carries
+nothing for the remote section even when it mentions online students exist.
 
 ## The note pattern
 
@@ -33,6 +50,10 @@ in Obsidian and are skipped by the PDF converter.
 The script only ever replaces its own blocks, so it is idempotent and safe to
 re-run after a remeasure. Constants parse with `^\s*([a-z_]+)\s*=\s*(-?[\d.]+)`
 and table rows with `^\|\s*([\d.]+)\s*\|\s*([\d.]*)\s*\|`, blank cells skipped.
+
+When a row needs a text label (two pyramids, two materials), widen the row regex to
+a leading label cell and skip the header and the `---` divider by testing
+`set(label) <= set("-: ")`; without that the header row parses as data.
 
 ## The script
 
@@ -55,11 +76,18 @@ at 45 degrees and 0.707 at 60, so the check inverted the answer. Before trusting
 any formula a note states, plug in the value it is supposed to produce; then name
 the denominator in the prose (here the slant, not the rise).
 
-Read printed dimensions off the artwork, not off the prose table. That same note
-specified a 90 mm base edge while the template image is labelled 5 cm base, 1 cm
-top, 2.8 cm slant, and 90 mm cannot fit inside the 58.4 mm display the note
-otherwise assumes. Vision-read the source page and check the numbers against the
-hardware they have to sit on.
+Read printed dimensions off the artwork, not off the prose table, and measure the
+drawn segments rather than trusting which edge a label points at. That same note
+specified a 90 mm base edge while the template is labelled 5 cm base, 1 cm top,
+2.8 cm slant; and vision reading the artwork guessed the 2.8 cm was the slant when
+it dimensions the rise, which turns a "45 degree" template into a 54 degree one.
+The page is a single raster at a known dpi, so Hough segments on the PNG convert
+drawn lengths straight to millimetres and settle it in one pass. Then check the
+numbers against the hardware they have to sit on: 90 mm cannot fit a 58.4 mm
+display.
+
+The mirror, frustum and Fresnel relations those checks rest on, with the values
+used to verify a script: `references/optics-geometry-checks.md`.
 
 ## Estimator conditioning, the trap that bit
 
@@ -134,7 +162,13 @@ namespace into the module dict is what makes `print_html_to_pdf` see `goto_url` 
 This model cannot see the PDF. Check it with pymupdf in the terminal python3:
 
 - page count sane, and the marker comments, pipes and `[[` are all absent from the
-  extracted text (they mean a block did not convert)
+  extracted text (they mean a block did not convert). Checking the HTML instead:
+  grep for `![[` or the literal link text, never bare `[[`, because the converter's
+  MathJax config emits `inlineMath: [['$','$']]` and a bare-`[[` grep hits it every
+  time on a false positive
+- every embedded file exists before the export: a missing `![[name.png]]` prints as
+  literal text in the PDF instead of disappearing, so a diagram not yet drawn shows
+  up as scaffolding in the submission
 - every probe string present: each section heading, the fit line, the estimate, the
   spec comparison
 - `document.images.length` from the browser and `len(page.get_images())` from
